@@ -82,6 +82,24 @@ public class CuentasMem {
     }
     
     public boolean ValidarLogin(String usuario, String contrasena) {
+        if (usuario == null || contrasena == null) {
+            return false;
+        }
         
+        if (usuario.isEmpty() || contrasena.isEmpty()) {
+            return false;
+        }
+        
+        int indice = indexOf(usuario);
+        
+        if (indice == -1) {
+            return false;
+        }
+        
+        if (contrasena.equals(Contrasenas[indice])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
