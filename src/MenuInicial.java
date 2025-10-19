@@ -34,7 +34,7 @@ public class MenuInicial extends JFrame {
             }
         };
         
-        setTitle("Vampire Wargame");
+        setTitle("Vampire Wargame - Menu Inicial");
         this.setContentPane(PanelFondo);
         setSize(800, 600);
         setLocationRelativeTo(null);
