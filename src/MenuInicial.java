@@ -11,14 +11,10 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class Main extends JFrame {
-
-    
+public class MenuInicial extends JFrame {
     
     public static void main(String[] args) {
         // TODO code application logic here
         
-        System.out.println("nfdjibgjaebgashlbgsagbaskgbsjkgbsa");
-    }
-    
+    }    
 }
