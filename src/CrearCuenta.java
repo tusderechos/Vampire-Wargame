@@ -22,10 +22,13 @@ public class CrearCuenta extends JFrame {
     public JPasswordField PassConfirmarContra;
     public JButton BtnCrear;
     public JButton BtnCancelar;
-    public CuentasMem Memoria;
-    public MenuInicial menuInicial;
+    private final CuentasMem Memoria;
+    private final MenuInicial menuInicial;
 
-    public CrearCuenta() {
+    public CrearCuenta(CuentasMem Memoria, MenuInicial menuInicial) {
+        this.Memoria = Memoria;
+        this.menuInicial = menuInicial;
+        
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_crearcuenta.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
         
@@ -40,7 +43,6 @@ public class CrearCuenta extends JFrame {
         setTitle("Vampire Wargame - Crear Cuenta");
         setContentPane(PanelFondo);
         setSize(700, 700);
-        setLocationRelativeTo(null);
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
@@ -54,17 +56,17 @@ public class CrearCuenta extends JFrame {
         
         LblUsuario = new JLabel("Usuario");
         LblUsuario.setForeground(Color.WHITE);
-        TxtUsuario = new JTextField("fbjasbf");
+        TxtUsuario = new JTextField("");
         TxtUsuario.setMaximumSize(new Dimension(250, 45));
         
         LblContra = new JLabel("Contraseña");
         LblContra.setForeground(Color.WHITE);
-        PassContrasena = new JPasswordField("contra");
+        PassContrasena = new JPasswordField("");
         PassContrasena.setMaximumSize(new Dimension(250, 45));
         
         LblConfirmarContra = new JLabel("Confirmar Contraseña");
         LblConfirmarContra.setForeground(Color.WHITE);
-        PassConfirmarContra = new JPasswordField("confirmar contra");
+        PassConfirmarContra = new JPasswordField("");
         PassConfirmarContra.setMaximumSize(new Dimension(250, 45));
         
         PanelInfo.add(LblUsuario);
@@ -80,7 +82,10 @@ public class CrearCuenta extends JFrame {
         PanelBotones.setOpaque(false);
         
         BtnCrear = new JButton("CREAR CUENTA");
+        BtnCrear.addActionListener(e -> onCrear());
+        
         BtnCancelar = new JButton("CANCELAR");
+        BtnCancelar.addActionListener(e -> onSalir());
         
         PanelBotones.add(BtnCrear);
         PanelBotones.add(BtnCancelar);
@@ -93,9 +98,107 @@ public class CrearCuenta extends JFrame {
         PanelFondo.repaint();
     }
     
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new CrearCuenta().setVisible(true);
-        });
+    public void mostrar() {
+        LimpiarCampos();
+        setLocationRelativeTo(null);
+        TxtUsuario.requestFocusInWindow();
+        
+        getRootPane().setDefaultButton(BtnCrear);
+        setVisible(true);
+    }
+    
+    public void LimpiarCampos() {
+        TxtUsuario.setText("");
+        PassContrasena.setText("");
+        PassConfirmarContra.setText("");
+        TxtUsuario.requestFocus();
+    }
+    
+    public void onCrear() {
+        String usuario = TxtUsuario.getText();
+        char[] contra = PassContrasena.getPassword();
+        String contrasena = new String(contra);
+        char[] confcontra = PassConfirmarContra.getPassword();
+        String confirmarcontra = new String(confcontra);
+        
+        if (usuario.isEmpty() || contrasena.isEmpty() || confirmarcontra.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese algun dato", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        for (int i = 0; i < usuario.length(); i++) {
+            char c = usuario.charAt(i);
+            if (Character.isWhitespace(c)) {
+                JOptionPane.showMessageDialog(this, "El usuario no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
+                TxtUsuario.requestFocus();
+                return;
+            }
+        }
+        
+        if (contrasena.length() != 5 || confirmarcontra.length() != 5) {
+            JOptionPane.showMessageDialog(this, "La contraseña debe tener exactamente 5 caracteres", "Error", JOptionPane.ERROR_MESSAGE);
+            PassContrasena.requestFocus();
+            return;
+        }
+        
+        for (int i = 0; i < contrasena.length(); i++) {
+            char c = contrasena.charAt(i);
+            if (Character.isWhitespace(c)) {
+                JOptionPane.showMessageDialog(this, "La contraseña no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
+                PassContrasena.requestFocus();
+                return;
+            }
+        }
+        
+        String simbolos = "!#$/()?-_.,<>|";
+        boolean TieneSimbolo = false;
+        
+        for (int i = 0; i < simbolos.length(); i++) {
+            char simbolo = simbolos.charAt(i);
+            
+            if (contrasena.indexOf(simbolo) >= 0) {
+                TieneSimbolo = true;
+                break;
+            }
+        }
+            
+        if (!TieneSimbolo) {
+            JOptionPane.showMessageDialog(this, "La contraseña tiene que tener como minimo un simbolo", "Error", JOptionPane.ERROR_MESSAGE);
+            PassContrasena.requestFocus();
+            return;
+        }
+        
+        if (!contrasena.equals(confirmarcontra)) {
+            JOptionPane.showMessageDialog(this, "Las contraseñas deben ser iguales", "Error", JOptionPane.ERROR_MESSAGE);
+            PassConfirmarContra.requestFocus();
+            return;
+        }
+        
+        if (Memoria.isFull()) {
+            JOptionPane.showMessageDialog(this, "Capacidad de cuentas llena", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (Memoria.ExisteUsuario(usuario)) {
+            JOptionPane.showMessageDialog(this, "El usuario ya existe", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (Memoria.Agregar(usuario, contrasena) == true) {
+            JOptionPane.showMessageDialog(this, "Cuenta creada exitosamente", "Exito", JOptionPane.INFORMATION_MESSAGE);
+            this.dispose();
+            menuInicial.setVisible(true);
+        } else {
+            JOptionPane.showMessageDialog(this, "Hubo un error creando la cuenta", "Error", JOptionPane.ERROR_MESSAGE);
+            LimpiarCampos();
+        }
+    }
+    
+    private void onSalir() {
+        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir de la creacion de cuenta?", "Confirmacion", JOptionPane.YES_NO_OPTION);
+        
+        if (opcion == JOptionPane.YES_OPTION) {
+            this.dispose();
+            menuInicial.setVisible(true);
+        }
     }
 }

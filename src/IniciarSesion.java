@@ -7,6 +7,26 @@
  *
  * @author Hp
  */
-public class IniciarSesion {
+
+import javax.swing.*;
+import java.awt.*;
+
+public class IniciarSesion extends JFrame {
+    
+    private JLabel LblTitulo;
+    private JLabel LblUsuario;
+    private JTextField TxtUsuario;
+    private JLabel LblContra;
+    private JPasswordField PassContra;
+    private JButton BtnLogin;
+    private JButton BtnCancelar;
+    private CuentasMem Memoria;
+    private MenuInicial menuInicial;
+
+    public IniciarSesion(CuentasMem Memoria, MenuInicial menuInicial) {
+        this.Memoria = Memoria;
+        this.menuInicial = menuInicial;
+    }
+    
     
 }

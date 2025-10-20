@@ -20,8 +20,12 @@ public class MenuInicial extends JFrame {
     
     public IniciarSesion iniciarSesion;
     public CrearCuenta crearCuenta;
+    public CuentasMem Cuentas;
 
     public MenuInicial() {
+        Cuentas = new CuentasMem(40);
+        crearCuenta = new CrearCuenta(Cuentas, this);
+        
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_inicial.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
         
@@ -30,7 +34,6 @@ public class MenuInicial extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.drawImage(ImagenFondo, 0, 0, getWidth(), getHeight(), this);
-                
             }
         };
         
@@ -47,10 +50,14 @@ public class MenuInicial extends JFrame {
         
         BtnIniciarSesion = new JButton("INICIAR SESION");
         BtnIniciarSesion.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         BtnCrearCuenta = new JButton("CREAR CUENTA");
         BtnCrearCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
+        BtnCrearCuenta.addActionListener(e -> crearCuenta.mostrar());
+        
         BtnSalir = new JButton("SALIR");
         BtnSalir.setAlignmentX(Component.CENTER_ALIGNMENT);
+        BtnSalir.addActionListener(e -> onSalir());
         
         PanelBotones.add(BtnIniciarSesion);
         PanelBotones.add(BtnCrearCuenta);
@@ -66,9 +73,13 @@ public class MenuInicial extends JFrame {
         PanelFondo.repaint();
     }
     
-    
-    
-    
+    public void onSalir() {
+        int Opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir?", "Confirmacion", JOptionPane.YES_NO_OPTION);
+        
+        if (Opcion == JOptionPane.YES_OPTION) {
+            System.exit(0);
+        }
+    }
     
     public static void main(String[] args) {
         // TODO code application logic here
