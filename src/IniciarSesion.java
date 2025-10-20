@@ -106,7 +106,8 @@ public class IniciarSesion extends JFrame {
         TxtUsuario.requestFocusInWindow();
         
         getRootPane().setDefaultButton(BtnLogin);
-        setVisible(true);
+        menuInicial.setVisible(false);
+        this.setVisible(true);
     }
     
     public void onLogin() {

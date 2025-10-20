@@ -23,7 +23,7 @@ public class MenuPrincipal extends JFrame {
     private String UsuarioActivo;
     private JLabel LblUsuario;
     
-    private MenuInicial menuInicial;
+    private static MenuInicial menuInicial;
 
     public MenuPrincipal(MenuInicial menuInicial) {
         this.menuInicial = menuInicial;
@@ -42,14 +42,80 @@ public class MenuPrincipal extends JFrame {
         setTitle("Vampire Wargame - Menu Principal");
         this.setContentPane(PanelFondo);
         setSize(800, 600);
+        setLocationRelativeTo(null);
         setResizable(false);
+        getRootPane().setDefaultButton(BtnJugar);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        
+        JPanel PanelHeader = new JPanel();
+        PanelHeader.setLayout(new BoxLayout(PanelHeader, BoxLayout.Y_AXIS));
+        PanelHeader.setOpaque(false);
+        
+        LblTitulo = new JLabel("VAMPIRE WARGAME");
+        LblTitulo.setFont(new Font("Fette Unz Fraktur", Font.PLAIN, 28));
+        LblTitulo.setForeground(Color.WHITE);
+        
+        LblSubtitulo = new JLabel("Minijuego de Castlevania: Lord of Shadows");
+        LblSubtitulo.setFont(new Font("Fette Unz Fraktur", Font.PLAIN, 18));
+        LblSubtitulo.setForeground(Color.WHITE);
+        
+        PanelHeader.add(LblTitulo);
+        PanelHeader.add(LblSubtitulo);
+        
+        
+        JPanel PanelBotones = new JPanel();
+        PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.Y_AXIS));
+        PanelBotones.setOpaque(false);
+        
+        BtnJugar = new JButton("JUGAR VAMPIRE WARGAME");
+        BtnJugar.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        BtnJugar.addActionListener(e -> onJugar());
+
+        BtnCuenta = new JButton("MI CUENTA");
+        BtnCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        BtnCuenta.addActionListener(e -> onMiCuenta());
+
+        BtnReportes = new JButton("REPORTES");
+        BtnReportes.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        BtnReportes.addActionListener(e -> onReportes());
+
+        BtnLogout = new JButton("LOG OUT");
+        BtnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        BtnLogout.addActionListener(e -> onLogout());
+        
+        /*
+            Ing si esta viendo esto es porque he decidido no quitar/cambiar las 5 creaciones de un glue,
+            pido perdon pero asi va a tener que ser
+        */
+        Component glue = Box.createGlue();
+        Component glue2 = Box.createGlue();
+        Component glue3 = Box.createGlue();
+        Component glue4 = Box.createGlue();
+        Component glue5 = Box.createGlue();
+
+        PanelBotones.add(glue);
+        PanelBotones.add(BtnJugar);
+        PanelBotones.add(glue2);
+        PanelBotones.add(BtnCuenta);
+        PanelBotones.add(glue3);
+        PanelBotones.add(BtnReportes);
+        PanelBotones.add(glue4);
+        PanelBotones.add(BtnLogout);
+        PanelBotones.add(glue5);
+        
+        
+        PanelFondo.setLayout(new BorderLayout());
+        PanelFondo.add(PanelHeader, BorderLayout.NORTH);
+        PanelFondo.add(PanelBotones, BorderLayout.CENTER);
+        PanelFondo.repaint();
     }
     
-    public void mostrar() {
-        setLocationRelativeTo(null);
+    public void onLogout() {
+        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.INFORMATION_MESSAGE, JOptionPane.YES_NO_OPTION);
         
-        getRootPane().setDefaultButton(BtnJugar);
-        setVisible(true);
+        if (opcion == JOptionPane.YES_OPTION) {
+            this.dispose();
+            menuInicial.setVisible(true);
+        }
     }
 }

@@ -104,7 +104,8 @@ public class CrearCuenta extends JFrame {
         TxtUsuario.requestFocusInWindow();
         
         getRootPane().setDefaultButton(BtnCrear);
-        setVisible(true);
+        menuInicial.setVisible(false);
+        this.setVisible(true);
     }
     
     public void LimpiarCampos() {
