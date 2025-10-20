@@ -26,6 +26,16 @@ public class IniciarSesion extends JFrame {
     public IniciarSesion(CuentasMem Memoria, MenuInicial menuInicial) {
         this.Memoria = Memoria;
         this.menuInicial = menuInicial;
+        
+        ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_login.PNG"));
+        Image ImagenFondo = IconoFondo.getImage();
+        
+        JPanel PanelFondo = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                
+            }
+        };
     }
     
     
