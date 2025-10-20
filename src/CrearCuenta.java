@@ -13,15 +13,15 @@ import java.awt.*;
 
 public class CrearCuenta extends JFrame {
     
-    public JLabel LblTitulo;
-    public JLabel LblUsuario;
-    public JTextField TxtUsuario;
-    public JLabel LblContra;
-    public JPasswordField PassContrasena;
-    public JLabel LblConfirmarContra;
-    public JPasswordField PassConfirmarContra;
-    public JButton BtnCrear;
-    public JButton BtnCancelar;
+    private JLabel LblTitulo;
+    private JLabel LblUsuario;
+    private JTextField TxtUsuario;
+    private JLabel LblContra;
+    private JPasswordField PassContrasena;
+    private JLabel LblConfirmarContra;
+    private JPasswordField PassConfirmarContra;
+    private JButton BtnCrear;
+    private JButton BtnCancelar;
     private final CuentasMem Memoria;
     private final MenuInicial menuInicial;
 
@@ -190,6 +190,7 @@ public class CrearCuenta extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Hubo un error creando la cuenta", "Error", JOptionPane.ERROR_MESSAGE);
             LimpiarCampos();
+            TxtUsuario.requestFocus();
         }
     }
     

@@ -23,8 +23,8 @@ public class CuentasMem {
     
     public int indexOf(String usuario) {
         usuario = usuario.trim();
-        for (int i = 0; i < Registrados - 1; i++) {
-            if (Usuarios[i].equals(usuario)) {
+        for (int i = 0; i < Registrados; i++) {
+            if (usuario.equals(Usuarios[i])) {
                 return i;
             }
         }
@@ -82,6 +82,7 @@ public class CuentasMem {
     }
     
     public boolean ValidarLogin(String usuario, String contrasena) {
+        
         if (usuario == null || contrasena == null) {
             return false;
         }

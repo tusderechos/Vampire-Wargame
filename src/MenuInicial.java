@@ -20,11 +20,14 @@ public class MenuInicial extends JFrame {
     
     public IniciarSesion iniciarSesion;
     public CrearCuenta crearCuenta;
-    public CuentasMem Cuentas;
+    public CuentasMem Memoria;
+    public MenuPrincipal menuPrincipal;
 
     public MenuInicial() {
-        Cuentas = new CuentasMem(40);
-        crearCuenta = new CrearCuenta(Cuentas, this);
+        Memoria = new CuentasMem(40);
+        menuPrincipal = new MenuPrincipal(this);
+        crearCuenta = new CrearCuenta(Memoria, this);
+        iniciarSesion = new IniciarSesion(Memoria, this, menuPrincipal);
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_inicial.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
@@ -50,6 +53,7 @@ public class MenuInicial extends JFrame {
         
         BtnIniciarSesion = new JButton("INICIAR SESION");
         BtnIniciarSesion.setAlignmentX(Component.CENTER_ALIGNMENT);
+        BtnIniciarSesion.addActionListener(e -> iniciarSesion.mostrar());
         
         BtnCrearCuenta = new JButton("CREAR CUENTA");
         BtnCrearCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
