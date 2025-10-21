@@ -18,5 +18,11 @@ import java.text.SimpleDateFormat;
 
 public class Reportes extends JFrame {
     
+    private JLabel LblTitulo;
+    private JButton BtnRanking;
+    private JButton BtnLog;
+    private JButton BtnSalir;
+    
+    
 }
 

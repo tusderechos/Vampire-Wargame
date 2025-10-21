@@ -24,6 +24,8 @@ public class MenuPrincipal extends JFrame {
     private JLabel LblUsuario;
     
     private static MenuInicial menuInicial;
+    private static MiCuenta miCuenta;
+    
 
     public MenuPrincipal(MenuInicial menuInicial) {
         this.menuInicial = menuInicial;
@@ -52,7 +54,7 @@ public class MenuPrincipal extends JFrame {
         PanelHeader.setOpaque(false);
         
         LblTitulo = new JLabel("VAMPIRE WARGAME");
-        LblTitulo.setFont(new Font("Fette Unz Fraktur", Font.PLAIN, 28));
+        LblTitulo.setFont(new Font("Times New Roman", Font.PLAIN, 28));
         LblTitulo.setForeground(Color.WHITE);
         
         LblSubtitulo = new JLabel("Minijuego de Castlevania: Lord of Shadows");
@@ -81,7 +83,7 @@ public class MenuPrincipal extends JFrame {
 
         BtnLogout = new JButton("LOG OUT");
         BtnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        BtnLogout.addActionListener(e -> onLogout());
+        BtnLogout.addActionListener(e -> onLogout());
         
         /*
             Ing si esta viendo esto es porque he decidido no quitar/cambiar las 5 creaciones de un glue,
@@ -103,19 +105,40 @@ public class MenuPrincipal extends JFrame {
         PanelBotones.add(BtnLogout);
         PanelBotones.add(glue5);
         
+        LblUsuario = new JLabel("");
+        LblUsuario.setFont(new Font("Arial", Font.BOLD, 18));
+        LblUsuario.setForeground(Color.WHITE);
         
         PanelFondo.setLayout(new BorderLayout());
         PanelFondo.add(PanelHeader, BorderLayout.NORTH);
         PanelFondo.add(PanelBotones, BorderLayout.CENTER);
+        PanelFondo.add(LblUsuario, BorderLayout.SOUTH);
         PanelFondo.repaint();
     }
     
+    public void onMiCuenta() {
+        this.dispose();
+        miCuenta.mostrar();
+    }
+    
     public void onLogout() {
-        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.INFORMATION_MESSAGE, JOptionPane.YES_NO_OPTION);
+        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
+            UsuarioActivo = null;
             this.dispose();
             menuInicial.setVisible(true);
         }
     }
+
+    public String getUsuarioActivo() {
+        return UsuarioActivo;
+    }
+
+    public void setUsuarioActivo(String UsuarioActivo) {
+        this.UsuarioActivo = UsuarioActivo;
+        LblUsuario.setText(UsuarioActivo);
+    }
+    
+    
 }

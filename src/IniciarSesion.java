@@ -20,6 +20,7 @@ public class IniciarSesion extends JFrame {
     private JPasswordField PassContra;
     private JButton BtnLogin;
     private JButton BtnCancelar;
+    
     private CuentasMem Memoria;
     private MenuInicial menuInicial;
     private MenuPrincipal menuPrincipal;
@@ -166,6 +167,7 @@ public class IniciarSesion extends JFrame {
         
         if (Memoria.ValidarLogin(usuario, contrasena)) {
             JOptionPane.showMessageDialog(this, "Se ha hecho un login exitosamente", "Login exitoso", JOptionPane.INFORMATION_MESSAGE);
+            menuPrincipal.setUsuarioActivo(usuario);
             this.dispose();
             menuPrincipal.setVisible(true);
         } else {
