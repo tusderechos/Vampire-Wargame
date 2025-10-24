@@ -25,10 +25,12 @@ public class MenuPrincipal extends JFrame {
     
     private static MenuInicial menuInicial;
     private static MiCuenta miCuenta;
+    private static CuentasMem Memoria;
     
 
     public MenuPrincipal(MenuInicial menuInicial) {
         this.menuInicial = menuInicial;
+        miCuenta = new MiCuenta(this, Memoria);
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_principal.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
@@ -75,7 +77,7 @@ public class MenuPrincipal extends JFrame {
 
         BtnCuenta = new JButton("MI CUENTA");
         BtnCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        BtnCuenta.addActionListener(e -> onMiCuenta());
+        BtnCuenta.addActionListener(e -> miCuenta.mostrar());
 
         BtnReportes = new JButton("REPORTES");
         BtnReportes.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -116,11 +118,6 @@ public class MenuPrincipal extends JFrame {
         PanelFondo.repaint();
     }
     
-    public void onMiCuenta() {
-        this.dispose();
-        miCuenta.mostrar();
-    }
-    
     public void onLogout() {
         int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.YES_NO_OPTION);
         
@@ -139,6 +136,4 @@ public class MenuPrincipal extends JFrame {
         this.UsuarioActivo = UsuarioActivo;
         LblUsuario.setText(UsuarioActivo);
     }
-    
-    
 }
