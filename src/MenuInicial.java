@@ -18,16 +18,10 @@ public class MenuInicial extends JFrame {
     public JButton BtnCrearCuenta;
     public JButton BtnSalir;
     
-    public IniciarSesion iniciarSesion;
-    public CrearCuenta crearCuenta;
     public CuentasMem Memoria;
-    public MenuPrincipal menuPrincipal;
 
     public MenuInicial() {
         Memoria = new CuentasMem(40);
-        menuPrincipal = new MenuPrincipal(this);
-        crearCuenta = new CrearCuenta(Memoria, this);
-        iniciarSesion = new IniciarSesion(Memoria, this, menuPrincipal);
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_inicial.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
@@ -53,11 +47,11 @@ public class MenuInicial extends JFrame {
         
         BtnIniciarSesion = new JButton("INICIAR SESION");
         BtnIniciarSesion.setAlignmentX(Component.CENTER_ALIGNMENT);
-        BtnIniciarSesion.addActionListener(e -> iniciarSesion.mostrar());
+        BtnIniciarSesion.addActionListener(e -> AbrirIniciarSesion());
         
         BtnCrearCuenta = new JButton("CREAR CUENTA");
         BtnCrearCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
-        BtnCrearCuenta.addActionListener(e -> crearCuenta.mostrar());
+        BtnCrearCuenta.addActionListener(e -> AbrirCrearCuenta());
         
         BtnSalir = new JButton("SALIR");
         BtnSalir.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -70,14 +64,35 @@ public class MenuInicial extends JFrame {
         LblTitulo = new JLabel("VAMPIRE WARGAME");
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
+        LblTitulo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         PanelFondo.setLayout(new BorderLayout());
-        PanelFondo.add(PanelBotones, BorderLayout.SOUTH);
         PanelFondo.add(LblTitulo, BorderLayout.NORTH);
+        PanelFondo.add(PanelBotones, BorderLayout.SOUTH);
         PanelFondo.repaint();
     }
     
-    public void onSalir() {
+    private void AbrirIniciarSesion() {
+        IniciarSesion iniciarSesion = new IniciarSesion(this, Memoria, true);
+        iniciarSesion.setVisible(true);
+    }
+    
+    private void AbrirCrearCuenta() {
+        CrearCuenta crearCuenta = new CrearCuenta(this, Memoria, true);
+        crearCuenta.setVisible(true);
+    }
+    
+    public void onLoginExitoso(String usuario) {
+        if (usuario == null || usuario.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Usuario Invalido", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        dispose();
+        new MenuPrincipal(Memoria, usuario).setVisible(true);
+    }
+    
+    private void onSalir() {
         int Opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir?", "Confirmacion", JOptionPane.YES_NO_OPTION);
         
         if (Opcion == JOptionPane.YES_OPTION) {

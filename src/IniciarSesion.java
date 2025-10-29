@@ -11,7 +11,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class IniciarSesion extends JFrame {
+public class IniciarSesion extends JDialog {
     
     private JLabel LblTitulo;
     private JLabel LblUsuario;
@@ -21,14 +21,13 @@ public class IniciarSesion extends JFrame {
     private JButton BtnLogin;
     private JButton BtnCancelar;
     
-    private CuentasMem Memoria;
-    private MenuInicial menuInicial;
-    private MenuPrincipal menuPrincipal;
+    private final CuentasMem Memoria;
+    private final MenuInicial menuInicial;
 
-    public IniciarSesion(CuentasMem Memoria, MenuInicial menuInicial, MenuPrincipal menuPrincipal) {
+    public IniciarSesion(MenuInicial menuInicial, CuentasMem Memoria, boolean modal) {
+        super(menuInicial, modal);
         this.Memoria = Memoria;
         this.menuInicial = menuInicial;
-        this.menuPrincipal = menuPrincipal;
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_login.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
@@ -95,7 +94,7 @@ public class IniciarSesion extends JFrame {
         PanelFondo.repaint();
     }
     
-    public void LimpiarCampos() {
+    private void LimpiarCampos() {
         TxtUsuario.setText("");
         PassContra.setText("");
         TxtUsuario.requestFocus();
@@ -103,19 +102,14 @@ public class IniciarSesion extends JFrame {
     
     public void mostrar() {
         LimpiarCampos();
-        setLocationRelativeTo(null);
-        TxtUsuario.requestFocusInWindow();
-        
+        setLocationRelativeTo(menuInicial);        
         getRootPane().setDefaultButton(BtnLogin);
-        menuInicial.setVisible(false);
-        this.setVisible(true);
+        setVisible(true);
     }
     
-    public void onLogin() {
+    private void onLogin() {
         String usuario = TxtUsuario.getText();
-        
-        char[] pass = PassContra.getPassword();
-        String contrasena = new String(pass);
+        String contrasena = new String(PassContra.getPassword());
         
         if (usuario.isEmpty() || contrasena.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Usuario o contraseña vacio", "Error", JOptionPane.ERROR_MESSAGE);
@@ -123,8 +117,7 @@ public class IniciarSesion extends JFrame {
         }
         
         for (int i = 0; i < usuario.length(); i++) {
-            char c = usuario.charAt(i);
-            if (Character.isWhitespace(c)) {
+            if (Character.isWhitespace(usuario.charAt(i))) {
                 JOptionPane.showMessageDialog(this, "El usuario no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
                 TxtUsuario.requestFocus();
                 return;
@@ -138,8 +131,7 @@ public class IniciarSesion extends JFrame {
         }
         
         for (int i = 0; i < contrasena.length(); i++) {
-            char c = contrasena.charAt(i);
-            if (Character.isWhitespace(c)) {
+            if (Character.isWhitespace(contrasena.charAt(i))) {
                 JOptionPane.showMessageDialog(this, "La contraseña no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
                 PassContra.requestFocus();
                 return;
@@ -149,10 +141,8 @@ public class IniciarSesion extends JFrame {
         String simbolos = "!#$/()?-_.,<>|";
         boolean TieneSimbolo = false;
         
-        for (int i = 0; i < simbolos.length(); i++) {
-            char simbolo = simbolos.charAt(i);
-            
-            if (contrasena.indexOf(simbolo) >= 0) {
+        for (int i = 0; i < simbolos.length(); i++) {            
+            if (contrasena.indexOf(simbolos.charAt(i)) >= 0) {
                 TieneSimbolo = true;
                 break;
             }
@@ -167,13 +157,11 @@ public class IniciarSesion extends JFrame {
         
         if (Memoria.ValidarLogin(usuario, contrasena)) {
             JOptionPane.showMessageDialog(this, "Se ha hecho un login exitosamente", "Login exitoso", JOptionPane.INFORMATION_MESSAGE);
-            menuPrincipal.setUsuarioActivo(usuario);
-            this.dispose();
-            menuPrincipal.setVisible(true);
+            menuInicial.onLoginExitoso(usuario);
+            dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Ha habido un error en el login, intentelo de nuevo", "Error", JOptionPane.ERROR_MESSAGE);
             LimpiarCampos();
-            TxtUsuario.requestFocus();
         }
     }
     
@@ -181,8 +169,7 @@ public class IniciarSesion extends JFrame {
         int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir del login?", "Confirmacion", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
-            this.dispose();
-            menuInicial.setVisible(true);
+            dispose();
         }
     }
 }

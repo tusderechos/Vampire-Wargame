@@ -141,7 +141,7 @@ public class CuentasMem {
         return true;
     }
     
-    public String getUsario(int indice) {
+    public String getUsuario(int indice) {
         if (indice < 0 || indice >= Registrados) {
             return null;
         }

@@ -23,14 +23,20 @@ public class MenuPrincipal extends JFrame {
     private String UsuarioActivo;
     private JLabel LblUsuario;
     
-    private static MenuInicial menuInicial;
-    private static MiCuenta miCuenta;
-    private static CuentasMem Memoria;
+    private CuentasMem Memoria;
     
 
-    public MenuPrincipal(MenuInicial menuInicial) {
-        this.menuInicial = menuInicial;
-        miCuenta = new MiCuenta(this, Memoria);
+    public MenuPrincipal(CuentasMem Memoria, String UsuarioActivo) {
+        this.Memoria = Memoria;
+        this.UsuarioActivo = (UsuarioActivo == null) ? "" : UsuarioActivo.trim();
+        
+        if (this.UsuarioActivo.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Inicia sesion o crea una cuenta!", "Error", JOptionPane.WARNING_MESSAGE);
+            dispose();
+            
+            new MenuInicial().setVisible(true);
+            return;
+        }
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_principal.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
@@ -48,7 +54,6 @@ public class MenuPrincipal extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
         setResizable(false);
-        getRootPane().setDefaultButton(BtnJugar);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         JPanel PanelHeader = new JPanel();
@@ -77,11 +82,11 @@ public class MenuPrincipal extends JFrame {
 
         BtnCuenta = new JButton("MI CUENTA");
         BtnCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
-        BtnCuenta.addActionListener(e -> miCuenta.mostrar());
+        BtnCuenta.addActionListener(e -> AbrirMiCuenta());
 
         BtnReportes = new JButton("REPORTES");
         BtnReportes.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        BtnReportes.addActionListener(e -> onReportes());
+        BtnReportes.addActionListener(e -> AbrirReportes());
 
         BtnLogout = new JButton("LOG OUT");
         BtnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -91,11 +96,11 @@ public class MenuPrincipal extends JFrame {
             Ing si esta viendo esto es porque he decidido no quitar/cambiar las 5 creaciones de un glue,
             pido perdon pero asi va a tener que ser
         */
-        Component glue = Box.createGlue();
-        Component glue2 = Box.createGlue();
-        Component glue3 = Box.createGlue();
-        Component glue4 = Box.createGlue();
-        Component glue5 = Box.createGlue();
+        Component glue = Box.createVerticalGlue();
+        Component glue2 = Box.createVerticalStrut(12);
+        Component glue3 = Box.createVerticalStrut(12);
+        Component glue4 = Box.createVerticalStrut(12);
+        Component glue5 = Box.createVerticalGlue();
 
         PanelBotones.add(glue);
         PanelBotones.add(BtnJugar);
@@ -107,24 +112,46 @@ public class MenuPrincipal extends JFrame {
         PanelBotones.add(BtnLogout);
         PanelBotones.add(glue5);
         
-        LblUsuario = new JLabel("");
+        LblUsuario = new JLabel("Usuario: " + this.UsuarioActivo);
         LblUsuario.setFont(new Font("Arial", Font.BOLD, 18));
         LblUsuario.setForeground(Color.WHITE);
+        LblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
         
         PanelFondo.setLayout(new BorderLayout());
         PanelFondo.add(PanelHeader, BorderLayout.NORTH);
         PanelFondo.add(PanelBotones, BorderLayout.CENTER);
         PanelFondo.add(LblUsuario, BorderLayout.SOUTH);
+        
+        getRootPane().setDefaultButton(BtnJugar);
+        
         PanelFondo.repaint();
     }
     
-    public void onLogout() {
+    private void AbrirMiCuenta() {
+        if (UsuarioActivo == null || UsuarioActivo.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Primero inicia sesion o crea una cuenta!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        new MiCuenta(Memoria, UsuarioActivo, this).setVisible(true);
+    }
+    
+    private void AbrirReportes() {
+        if (UsuarioActivo == null || UsuarioActivo.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Primero inicia sesion o crea una cuenta!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+//        new Reportes(Memoria, UsuarioActivo, this).setVisible(true);
+    }
+    
+    private void onLogout() {
         int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
             UsuarioActivo = null;
-            this.dispose();
-            menuInicial.setVisible(true);
+            dispose();
+            new MenuInicial().setVisible(true);
         }
     }
 
@@ -133,7 +160,8 @@ public class MenuPrincipal extends JFrame {
     }
 
     public void setUsuarioActivo(String UsuarioActivo) {
-        this.UsuarioActivo = UsuarioActivo;
-        LblUsuario.setText(UsuarioActivo);
+        this.UsuarioActivo = (UsuarioActivo == null) ? "" : UsuarioActivo.trim();
+        LblUsuario.setText("Usuario: " + this.UsuarioActivo);
+        setTitle("Vampire Wargame - Menu Principal" + (this.UsuarioActivo.isEmpty() ? "" : " (" + this.UsuarioActivo + ")"));
     }
 }

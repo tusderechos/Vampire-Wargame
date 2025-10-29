@@ -11,7 +11,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class CrearCuenta extends JFrame {
+public class CrearCuenta extends JDialog {
     
     private JLabel LblTitulo;
     private JLabel LblUsuario;
@@ -22,10 +22,12 @@ public class CrearCuenta extends JFrame {
     private JPasswordField PassConfirmarContra;
     private JButton BtnCrear;
     private JButton BtnCancelar;
+    
     private final CuentasMem Memoria;
     private final MenuInicial menuInicial;
 
-    public CrearCuenta(CuentasMem Memoria, MenuInicial menuInicial) {
+    public CrearCuenta(MenuInicial menuInicial, CuentasMem Memoria, boolean modal) {
+        super(menuInicial, modal);
         this.Memoria = Memoria;
         this.menuInicial = menuInicial;
         
@@ -87,7 +89,10 @@ public class CrearCuenta extends JFrame {
         BtnCancelar = new JButton("CANCELAR");
         BtnCancelar.addActionListener(e -> onSalir());
         
+        Component glue = Box.createHorizontalGlue();
+        
         PanelBotones.add(BtnCrear);
+        PanelBotones.add(glue);
         PanelBotones.add(BtnCancelar);
         
         
@@ -100,12 +105,9 @@ public class CrearCuenta extends JFrame {
     
     public void mostrar() {
         LimpiarCampos();
-        setLocationRelativeTo(null);
-        TxtUsuario.requestFocusInWindow();
-        
+        setLocationRelativeTo(menuInicial);        
         getRootPane().setDefaultButton(BtnCrear);
-        menuInicial.setVisible(false);
-        this.setVisible(true);
+        setVisible(true);
     }
     
     public void LimpiarCampos() {
@@ -116,11 +118,9 @@ public class CrearCuenta extends JFrame {
     }
     
     public void onCrear() {
-        String usuario = TxtUsuario.getText();
-        char[] contra = PassContrasena.getPassword();
-        String contrasena = new String(contra);
-        char[] confcontra = PassConfirmarContra.getPassword();
-        String confirmarcontra = new String(confcontra);
+        String usuario = TxtUsuario.getText();        
+        String contrasena = new String(PassContrasena.getPassword());        
+        String confirmarcontra = new String(PassConfirmarContra.getPassword());
         
         if (usuario.isEmpty() || contrasena.isEmpty() || confirmarcontra.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Ingrese algun dato", "Error", JOptionPane.ERROR_MESSAGE);
@@ -128,8 +128,7 @@ public class CrearCuenta extends JFrame {
         }
         
         for (int i = 0; i < usuario.length(); i++) {
-            char c = usuario.charAt(i);
-            if (Character.isWhitespace(c)) {
+            if (Character.isWhitespace(usuario.charAt(i))) {
                 JOptionPane.showMessageDialog(this, "El usuario no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
                 TxtUsuario.requestFocus();
                 return;
@@ -143,8 +142,7 @@ public class CrearCuenta extends JFrame {
         }
         
         for (int i = 0; i < contrasena.length(); i++) {
-            char c = contrasena.charAt(i);
-            if (Character.isWhitespace(c)) {
+            if (Character.isWhitespace(contrasena.charAt(i))) {
                 JOptionPane.showMessageDialog(this, "La contraseña no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
                 PassContrasena.requestFocus();
                 return;
@@ -154,10 +152,8 @@ public class CrearCuenta extends JFrame {
         String simbolos = "!#$/()?-_.,<>|";
         boolean TieneSimbolo = false;
         
-        for (int i = 0; i < simbolos.length(); i++) {
-            char simbolo = simbolos.charAt(i);
-            
-            if (contrasena.indexOf(simbolo) >= 0) {
+        for (int i = 0; i < simbolos.length(); i++) {            
+            if (contrasena.indexOf(simbolos.charAt(i)) >= 0) {
                 TieneSimbolo = true;
                 break;
             }
@@ -184,14 +180,13 @@ public class CrearCuenta extends JFrame {
             return;
         }
         
-        if (Memoria.Agregar(usuario, contrasena) == true) {
+        if (Memoria.Agregar(usuario, contrasena)) {
             JOptionPane.showMessageDialog(this, "Cuenta creada exitosamente", "Exito", JOptionPane.INFORMATION_MESSAGE);
-            this.dispose();
-            menuInicial.setVisible(true);
+            menuInicial.onLoginExitoso(usuario);
+            dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Hubo un error creando la cuenta", "Error", JOptionPane.ERROR_MESSAGE);
             LimpiarCampos();
-            TxtUsuario.requestFocus();
         }
     }
     
@@ -199,8 +194,7 @@ public class CrearCuenta extends JFrame {
         int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir de la creacion de cuenta?", "Confirmacion", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
-            this.dispose();
-            menuInicial.setVisible(true);
+            dispose();
         }
     }
 }
