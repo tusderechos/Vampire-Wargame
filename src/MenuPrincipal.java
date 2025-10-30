@@ -149,9 +149,8 @@ public class MenuPrincipal extends JFrame {
         int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres regresar al menu inicial?", "Aviso", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
-            UsuarioActivo = null;
             dispose();
-            new MenuInicial().setVisible(true);
+            new MenuInicial(Memoria).setVisible(true);
         }
     }
 

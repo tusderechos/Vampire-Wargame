@@ -18,10 +18,14 @@ public class MenuInicial extends JFrame {
     public JButton BtnCrearCuenta;
     public JButton BtnSalir;
     
-    public CuentasMem Memoria;
-
+    public final CuentasMem Memoria;
+    
     public MenuInicial() {
-        Memoria = new CuentasMem(40);
+        this(new CuentasMem(40));
+    }
+
+    public MenuInicial(CuentasMem Memoria) {
+        this.Memoria = Memoria;
         
         ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_inicial.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
