@@ -65,7 +65,7 @@ public class MenuInicial extends JFrame {
         PanelBotones.add(BtnCrearCuenta);
         PanelBotones.add(BtnSalir);
         
-        LblTitulo = new JLabel("VAMPIRE WARGAME");
+        LblTitulo = new JLabel("VAMPIRE WARGAME", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
         LblTitulo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

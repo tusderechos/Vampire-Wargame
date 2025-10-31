@@ -46,7 +46,7 @@ public class IniciarSesion extends JDialog {
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
-        LblTitulo = new JLabel("INICIAR SESION");
+        LblTitulo = new JLabel("INICIAR SESION", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
         

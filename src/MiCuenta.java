@@ -59,11 +59,11 @@ public class MiCuenta extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         
-        LblTitulo = new JLabel("MI CUENTA");
+        LblTitulo = new JLabel("MI CUENTA", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 26));
         LblTitulo.setForeground(Color.WHITE);
         
-        LblSubtitulo = new JLabel("Encuentra informacion sobre tu cuenta");
+        LblSubtitulo = new JLabel("Encuentra informacion sobre tu cuenta", SwingConstants.CENTER);
         LblSubtitulo.setFont(new Font("Arial", Font.BOLD, 18));
         LblSubtitulo.setForeground(Color.WHITE);
         

@@ -48,7 +48,7 @@ public class CrearCuenta extends JDialog {
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
-        LblTitulo = new JLabel("CREAR CUENTA");
+        LblTitulo = new JLabel("CREAR CUENTA", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
         

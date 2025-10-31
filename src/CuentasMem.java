@@ -19,19 +19,32 @@ public class CuentasMem {
     public int[] Puntos;
     public Calendar[] FechaIngreso;
     public boolean[] Activo;
+    public ArrayList<String[]>[] Logs; 
+    /*
+        Tengo que explicar este ArrayList para Daniel del futuro,
+        esto es practicamente un "arrglo de ArrayList de arreglos", que quiero decir con esto:
+        - Como existen varios usuarios simultaneamente, cada uno tiene su propia lista de Logs, una lista dentro del mismo usuario
+        es por eso que ando usando una "estructura doble", por decirlo asi
+            -Toda esta info literalmente la busque en Google y salio en el AI Overview, entonces tecnicamente lo saque de una IA?? idk estoy muy cansado para saber
+    */
     
     public int Registrados;
     public int MAX;
 
     public CuentasMem(int max) {
         this.MAX = max;
-        this.Registrados = 0;
+        Registrados = 0;
         
-        this.Usuarios = new String[MAX];
-        this.Contrasenas = new String[MAX];
-        this.Puntos = new int[MAX];
-        this.FechaIngreso = new Calendar[MAX];
-        this.Activo = new boolean[MAX];
+        Usuarios = new String[MAX];
+        Contrasenas = new String[MAX];
+        Puntos = new int[MAX];
+        FechaIngreso = new Calendar[MAX];
+        Activo = new boolean[MAX];
+        Logs = new ArrayList[MAX];
+        
+        for (int i = 0; i < MAX; i++) {
+            Logs[i] = new ArrayList<>();
+        }
     }
     
     public int indexOf(String usuario) {
@@ -139,6 +152,34 @@ public class CuentasMem {
         
         Registrados--;
         return true;
+    }
+    
+    public void AgregarLog(String usuario, String fecha, String rival, String resultado) {
+        for (int i = 0; i < Registrados; i++) {
+            if (Usuarios[i].equalsIgnoreCase(usuario)) {
+                if (Logs[i] == null) {
+                    Logs[i] = new ArrayList<>();
+                }
+                
+                Logs[i].add(new String[]{fecha, rival, resultado});
+                break;
+            }
+        }
+    }
+    
+    public ArrayList<String[]> getLogsUsuario(String usuario) {
+        ArrayList<String[]> listalogs = new ArrayList<>();
+        
+        for (int i = 0; i < Registrados; i++) {
+            if (Usuarios[i].equalsIgnoreCase(usuario) && Activo[i]) {
+                if (Logs[i] != null && !Logs[i].isEmpty()) {
+                    listalogs.addAll(Logs[i]);
+                }
+                break;
+            }
+        }
+        
+        return listalogs;
     }
     
     public String getUsuario(int indice) {

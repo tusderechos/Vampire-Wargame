@@ -60,11 +60,11 @@ public class MenuPrincipal extends JFrame {
         PanelHeader.setLayout(new BoxLayout(PanelHeader, BoxLayout.Y_AXIS));
         PanelHeader.setOpaque(false);
         
-        LblTitulo = new JLabel("VAMPIRE WARGAME");
+        LblTitulo = new JLabel("VAMPIRE WARGAME", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Times New Roman", Font.PLAIN, 28));
         LblTitulo.setForeground(Color.WHITE);
         
-        LblSubtitulo = new JLabel("Minijuego de Castlevania: Lord of Shadows");
+        LblSubtitulo = new JLabel("Minijuego de Castlevania: Lord of Shadows", SwingConstants.CENTER);
         LblSubtitulo.setFont(new Font("Fette Unz Fraktur", Font.PLAIN, 18));
         LblSubtitulo.setForeground(Color.WHITE);
         
@@ -142,7 +142,7 @@ public class MenuPrincipal extends JFrame {
             return;
         }
         
-//        new Reportes(Memoria, UsuarioActivo, this).setVisible(true);
+        new Reportes(Memoria, UsuarioActivo, this).setVisible(true);
     }
     
     private void onLogout() {
