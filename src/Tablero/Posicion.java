@@ -10,8 +10,8 @@ package Tablero;
  */
 public class Posicion {
     
-    private int Fila;
-    private int Col;
+    public int Fila;
+    public int Col;
     
     public Posicion(int Fila, int Col) {
         this.Fila = Fila;
