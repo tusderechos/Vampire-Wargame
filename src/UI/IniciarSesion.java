@@ -1,3 +1,5 @@
+package UI;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
@@ -8,30 +10,29 @@
  * @author Hp
  */
 
+import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
 
-public class CrearCuenta extends JDialog {
+public class IniciarSesion extends JDialog {
     
     private JLabel LblTitulo;
     private JLabel LblUsuario;
     private JTextField TxtUsuario;
     private JLabel LblContra;
-    private JPasswordField PassContrasena;
-    private JLabel LblConfirmarContra;
-    private JPasswordField PassConfirmarContra;
-    private JButton BtnCrear;
+    private JPasswordField PassContra;
+    private JButton BtnLogin;
     private JButton BtnCancelar;
     
     private final CuentasMem Memoria;
     private final MenuInicial menuInicial;
 
-    public CrearCuenta(MenuInicial menuInicial, CuentasMem Memoria, boolean modal) {
+    public IniciarSesion(MenuInicial menuInicial, CuentasMem Memoria, boolean modal) {
         super(menuInicial, modal);
         this.Memoria = Memoria;
         this.menuInicial = menuInicial;
         
-        ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_crearcuenta.PNG"));
+        ImageIcon IconoFondo = new ImageIcon(getClass().getResource("/images/bg_login.PNG"));
         Image ImagenFondo = IconoFondo.getImage();
         
         JPanel PanelFondo = new JPanel() {
@@ -42,15 +43,16 @@ public class CrearCuenta extends JDialog {
             }
         };
         
-        setTitle("Vampire Wargame - Crear Cuenta");
+        setTitle("Vampire Wargame - Iniciar Sesion");
         setContentPane(PanelFondo);
         setSize(700, 700);
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
-        LblTitulo = new JLabel("CREAR CUENTA", SwingConstants.CENTER);
+        LblTitulo = new JLabel("INICIAR SESION", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
+        
         
         JPanel PanelInfo = new JPanel();
         PanelInfo.setLayout(new BoxLayout(PanelInfo, BoxLayout.Y_AXIS));
@@ -63,35 +65,27 @@ public class CrearCuenta extends JDialog {
         
         LblContra = new JLabel("Contraseña");
         LblContra.setForeground(Color.WHITE);
-        PassContrasena = new JPasswordField("");
-        PassContrasena.setMaximumSize(new Dimension(250, 45));
-        
-        LblConfirmarContra = new JLabel("Confirmar Contraseña");
-        LblConfirmarContra.setForeground(Color.WHITE);
-        PassConfirmarContra = new JPasswordField("");
-        PassConfirmarContra.setMaximumSize(new Dimension(250, 45));
+        PassContra = new JPasswordField("");
+        PassContra.setMaximumSize(new Dimension(250, 45));
         
         PanelInfo.add(LblUsuario);
         PanelInfo.add(TxtUsuario);
         PanelInfo.add(LblContra);
-        PanelInfo.add(PassContrasena);
-        PanelInfo.add(LblConfirmarContra);
-        PanelInfo.add(PassConfirmarContra);
-        
+        PanelInfo.add(PassContra);
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.X_AXIS));
         PanelBotones.setOpaque(false);
         
-        BtnCrear = new JButton("CREAR CUENTA");
-        BtnCrear.addActionListener(e -> onCrear());
+        BtnLogin = new JButton("INICIAR SESION");
+        BtnLogin.addActionListener(e -> onLogin());
+        
+        Component glue = Box.createGlue();
         
         BtnCancelar = new JButton("CANCELAR");
         BtnCancelar.addActionListener(e -> onSalir());
         
-        Component glue = Box.createHorizontalGlue();
-        
-        PanelBotones.add(BtnCrear);
+        PanelBotones.add(BtnLogin);
         PanelBotones.add(glue);
         PanelBotones.add(BtnCancelar);
         
@@ -103,27 +97,25 @@ public class CrearCuenta extends JDialog {
         PanelFondo.repaint();
     }
     
-    public void mostrar() {
-        LimpiarCampos();
-        setLocationRelativeTo(menuInicial);        
-        getRootPane().setDefaultButton(BtnCrear);
-        setVisible(true);
-    }
-    
-    public void LimpiarCampos() {
+    private void LimpiarCampos() {
         TxtUsuario.setText("");
-        PassContrasena.setText("");
-        PassConfirmarContra.setText("");
+        PassContra.setText("");
         TxtUsuario.requestFocus();
     }
     
-    public void onCrear() {
-        String usuario = TxtUsuario.getText();        
-        String contrasena = new String(PassContrasena.getPassword());        
-        String confirmarcontra = new String(PassConfirmarContra.getPassword());
+    public void mostrar() {
+        LimpiarCampos();
+        setLocationRelativeTo(menuInicial);        
+        getRootPane().setDefaultButton(BtnLogin);
+        setVisible(true);
+    }
+    
+    private void onLogin() {
+        String usuario = TxtUsuario.getText();
+        String contrasena = new String(PassContra.getPassword());
         
-        if (usuario.isEmpty() || contrasena.isEmpty() || confirmarcontra.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ingrese algun dato", "Error", JOptionPane.ERROR_MESSAGE);
+        if (usuario.isEmpty() || contrasena.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Usuario o contraseña vacio", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
@@ -135,16 +127,16 @@ public class CrearCuenta extends JDialog {
             }
         }
         
-        if (contrasena.length() != 5 || confirmarcontra.length() != 5) {
+        if (contrasena.length() != 5) {
             JOptionPane.showMessageDialog(this, "La contraseña debe tener exactamente 5 caracteres", "Error", JOptionPane.ERROR_MESSAGE);
-            PassContrasena.requestFocus();
+            PassContra.requestFocus();
             return;
         }
         
         for (int i = 0; i < contrasena.length(); i++) {
             if (Character.isWhitespace(contrasena.charAt(i))) {
                 JOptionPane.showMessageDialog(this, "La contraseña no puede contener espacios", "Error", JOptionPane.ERROR_MESSAGE);
-                PassContrasena.requestFocus();
+                PassContra.requestFocus();
                 return;
             }
         }
@@ -161,37 +153,23 @@ public class CrearCuenta extends JDialog {
             
         if (!TieneSimbolo) {
             JOptionPane.showMessageDialog(this, "La contraseña tiene que tener como minimo un simbolo", "Error", JOptionPane.ERROR_MESSAGE);
-            PassContrasena.requestFocus();
+            PassContra.requestFocus();
             return;
         }
         
-        if (!contrasena.equals(confirmarcontra)) {
-            JOptionPane.showMessageDialog(this, "Las contraseñas deben ser iguales", "Error", JOptionPane.ERROR_MESSAGE);
-            PassConfirmarContra.requestFocus();
-            return;
-        }
         
-        if (Memoria.isFull()) {
-            JOptionPane.showMessageDialog(this, "Capacidad de cuentas llena", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (Memoria.ExisteUsuario(usuario)) {
-            JOptionPane.showMessageDialog(this, "El usuario ya existe", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        
-        if (Memoria.Agregar(usuario, contrasena)) {
-            JOptionPane.showMessageDialog(this, "Cuenta creada exitosamente", "Exito", JOptionPane.INFORMATION_MESSAGE);
+        if (Memoria.ValidarLogin(usuario, contrasena)) {
+            JOptionPane.showMessageDialog(this, "Se ha hecho un login exitosamente", "Login exitoso", JOptionPane.INFORMATION_MESSAGE);
             menuInicial.onLoginExitoso(usuario);
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Hubo un error creando la cuenta", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ha habido un error en el login, intentelo de nuevo", "Error", JOptionPane.ERROR_MESSAGE);
             LimpiarCampos();
         }
     }
     
     private void onSalir() {
-        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir de la creacion de cuenta?", "Confirmacion", JOptionPane.YES_NO_OPTION);
+        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir del login?", "Confirmacion", JOptionPane.YES_NO_OPTION);
         
         if (opcion == JOptionPane.YES_OPTION) {
             dispose();

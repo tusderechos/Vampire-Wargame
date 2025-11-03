@@ -11,6 +11,7 @@ package Fichas;
  * @author Hp
  */
 
+import Tablero.Posicion;
 import Tablero.Tablero;
 import java.util.ArrayList;
 
@@ -98,4 +99,9 @@ public abstract class Ficha {
     public abstract ArrayList<Posicion> AtaquesNormales(Tablero tablero);
     
     public abstract ArrayList<Posicion> AtaquesEspeciales(Tablero tablero);
+    
+    @Override
+    public String toString() {
+        return Nombre + " [" + Color + "]\n(Vidas: " + Vidas + ", Escudo: " + Escudo + ")";
+    }
 }

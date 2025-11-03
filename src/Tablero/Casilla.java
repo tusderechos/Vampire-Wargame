@@ -8,8 +8,6 @@ package Tablero;
  *
  * @author Hp
  */
-public class Tablero {
+public class Casilla {
     
-    private int Filas;
-    private int Cols;
 }
