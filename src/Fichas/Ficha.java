@@ -17,12 +17,12 @@ import java.util.ArrayList;
 
 public abstract class Ficha {
     
-    private String Nombre;
-    private Bando Color;
-    private Posicion Pos;
-    private int Ataque;
-    private int Vidas;
-    private int Escudo;
+    public String Nombre;
+    public Bando Color;
+    public Posicion Pos;
+    public int Ataque;
+    public int Vidas;
+    public int Escudo;
 
     public Ficha(String Nombre, Bando Color, int Ataque, int Vidas, int Escudo) {
         this.Nombre = Nombre;
@@ -99,6 +99,14 @@ public abstract class Ficha {
     public abstract ArrayList<Posicion> AtaquesNormales(Tablero tablero);
     
     public abstract ArrayList<Posicion> AtaquesEspeciales(Tablero tablero);
+    
+    public void RecibirDanoDirecto(int puntos) {
+        Vidas -= puntos;
+        
+        if (Vidas < 0) {
+            Vidas = 0;
+        }
+    }
     
     @Override
     public String toString() {
