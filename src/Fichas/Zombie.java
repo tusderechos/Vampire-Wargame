@@ -9,13 +9,14 @@ package Fichas;
  * @author Hp
  */
 
+import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;
 
 public class Zombie extends Ficha {
     
     public Zombie(Bando Color) {
-        super("Zombie", Color, 1, 1, 0); //1 punto de ataque, 1 punto de vida y 0 puntos de escudo
+        super("Zombie", Color, TipoFicha.ZOMBIE, 1, 1, 0); //1 punto de ataque, 1 punto de vida y 0 puntos de escudo
     }
     
     /*

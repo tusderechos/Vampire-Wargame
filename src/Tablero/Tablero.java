@@ -9,15 +9,18 @@ package Tablero;
  * @author Hp
  */
 
+import Fichas.Bando;
 import javax.swing.JOptionPane;
 import java.util.ArrayList;
-import Fichas.Ficha;
+import Fichas.*;
+import Ruleta.TipoFicha;
 
 public class Tablero {
     
     private int Filas;
     private int Cols;
     private Casilla[][] grid;
+    public static final int TOTAL_PIEZAS_POR_JUGADOR = 6;
     
     public Tablero(int Filas, int Cols) {
         this.Filas = Filas;
@@ -48,7 +51,6 @@ public class Tablero {
     
     public Casilla get(Posicion Pos) {
         if (!Dentro(Pos)) {
-            JOptionPane.showMessageDialog(null, "Posicion fuera del tablero");
             return null;
         }
         
@@ -77,6 +79,31 @@ public class Tablero {
         ficha.setPos(Pos);
     }
     
+    public void ColocarInicial() {
+        //Limpiar
+        for (int fila = 0; fila < Filas; fila++) {
+            for (int col = 0; col < Cols; col++) {
+                grid[fila][col].LiberarCasilla();
+            }
+        }
+        
+        //Fichas blancas
+        Colocar(new HombreLobo(Bando.NEGRAS), new Posicion(0, 0));
+        Colocar(new Vampiro(Bando.NEGRAS), new Posicion(0, 1));
+        Colocar(new Muerte(Bando.NEGRAS), new Posicion(0, 2));
+        Colocar(new Muerte(Bando.NEGRAS), new Posicion(0, 3));
+        Colocar(new Vampiro(Bando.NEGRAS), new Posicion(0, 4));
+        Colocar(new HombreLobo(Bando.NEGRAS), new Posicion(0, 5));
+        
+        //Fichas negras
+        Colocar(new HombreLobo(Bando.BLANCAS), new Posicion(5, 0));
+        Colocar(new Vampiro(Bando.BLANCAS), new Posicion(5, 1));
+        Colocar(new Muerte(Bando.BLANCAS), new Posicion(5, 2));
+        Colocar(new Muerte(Bando.BLANCAS), new Posicion(5, 3));
+        Colocar(new Vampiro(Bando.BLANCAS), new Posicion(5, 4));
+        Colocar(new HombreLobo(Bando.BLANCAS), new Posicion(5, 5));
+    }
+    
     public void MoverFicha(Posicion origen, Posicion destino) {
         if (!Dentro(origen) || !Dentro(destino)) {
             JOptionPane.showMessageDialog(null, "Ese movimiento no esta permitido");
@@ -91,7 +118,7 @@ public class Tablero {
             return;
         }
         
-        if (CasillaDestino.CasillaLibre()) {
+        if (!CasillaDestino.CasillaLibre()) {
             JOptionPane.showMessageDialog(null, "La casilla de destino esta ocupada: " + destino);
             return;
         }
@@ -118,11 +145,89 @@ public class Tablero {
         }
     }
     
+    public boolean Atacar(Posicion origen, Posicion destino) {
+        if (!Dentro(origen) || !Dentro(destino)) {
+            return false;
+        }
+        
+        Casilla casillaorigen = get(origen);
+        Casilla casilladestino = get(destino);
+        
+        if (casillaorigen == null || casilladestino == null || casillaorigen.CasillaLibre() || casilladestino.CasillaLibre()) {
+            return false;
+        }
+        
+        Ficha atacante = casillaorigen.getOcupante();
+        Ficha objetivo = casilladestino.getOcupante();
+        
+        if (atacante.getColor() == objetivo.getColor()) {
+            return false;
+        }
+        
+        //Verifca que el destino este autorizado por la pieza en si
+        boolean normales = ContienePos(atacante.AtaquesNormales(this), destino);
+        boolean especiales = ContienePos(atacante.AtaquesEspeciales(this), destino);
+        
+        if (!normales && !especiales) {
+            return false;
+        }
+        
+        //Reglas para los especiales
+        if (atacante instanceof Muerte) {
+            Muerte muerte = (Muerte) atacante;
+            
+            if (ContienePos(muerte.PosicionesLanza(this), destino)) {
+                objetivo.RecibirDanoDirecto(2);
+            } else if (ContienePos(muerte.EnemigosAlrededorZombieAliados(this), destino)) {
+                objetivo.RecibirDano(1);
+            } else if (normales) {
+                objetivo.RecibirDano(atacante.getAtaque());
+            } else {
+                return false;
+            }
+        } else if (atacante instanceof Vampiro) {
+            if (esAdyacente8(origen, destino)) {
+                ((Vampiro) atacante).ChuparSangre(objetivo);
+            } else {
+                objetivo.RecibirDano(atacante.getAtaque());
+            }
+        } else {
+            objetivo.RecibirDano(atacante.getAtaque());
+        }
+        
+        if (objetivo.getVidas() <= 0) {
+            QuitarFicha(destino);
+        }
+        
+        return true;
+    }
+    
+    private boolean ContienePos(ArrayList<Posicion> lista, Posicion pos) {
+        if (lista == null || pos == null) {
+            return false;
+        }
+        
+        for (Posicion posicion : lista) {
+            if (posicion.Fila == pos.Fila && posicion.Col == posicion.Col) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private boolean esAdyacente8(Posicion a, Posicion b) {
+        int filasdiagonal = Math.abs(a.Fila - b.Fila);
+        int colsdiagonal = Math.abs(a.Col - b.Col);
+        
+        return (filasdiagonal <= 1 && colsdiagonal <= 1 && (filasdiagonal + colsdiagonal) > 0);
+    }
+    
     public ArrayList<Posicion> Adyacentes8(Posicion Pos) {
         ArrayList<Posicion> res = new ArrayList<>();
         
         for (int direccionfila = -1; direccionfila <= 1; direccionfila++) {
-            for (int direccioncol = 0; direccioncol < 10; direccioncol++) {
+            for (int direccioncol = -1; direccioncol <= 1; direccioncol++) {
                 if (direccionfila == 0 && direccioncol == 0) {
                     continue;
                 }
@@ -145,7 +250,8 @@ public class Tablero {
         
         for (int[] direccion : direcciones) {
            Posicion posicion = new Posicion(Pos.Fila + direccion[0], Pos.Col + direccion[1]);
-            if (Dentro(Pos)) {
+           
+            if (Dentro(posicion)) {
                 res.add(posicion);
             }
         }
@@ -179,5 +285,25 @@ public class Tablero {
         }
         
         return true;
+    }
+    
+    public ArrayList<Posicion> BuscarFichasPorTipo(Bando Color, TipoFicha tipo) {
+        ArrayList<Posicion> resultado = new ArrayList<>();
+        
+        for (int fila = 0; fila < Filas; fila++) {
+            for (int col = 0; col < Cols; col++) {
+                Casilla casilla = grid[fila][col];
+                
+                if (!casilla.CasillaLibre()) {
+                    Ficha ficha = casilla.getOcupante();
+                    
+                    if (ficha.getColor() == Color && ficha.getTipo() == tipo) {
+                        resultado.add(new Posicion(fila, col));
+                    }
+                }
+            }
+        }
+        
+        return resultado;
     }
 }

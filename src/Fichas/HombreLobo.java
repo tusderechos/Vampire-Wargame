@@ -9,13 +9,14 @@ package Fichas;
  * @author Hp
  */
 
+import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;
 
 public class HombreLobo extends Ficha {
     
     public HombreLobo(Bando Color) {
-        super("Hombre Lobo", Color, 5, 5, 2); //5 puntos de ataque, 5 puntos de vida y 2 puntos de escudo
+        super("Hombre Lobo", Color, TipoFicha.HOMBRE_LOBO, 5, 5, 2); //5 puntos de ataque, 5 puntos de vida y 2 puntos de escudo
     }
     
     @Override

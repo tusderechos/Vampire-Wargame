@@ -2,15 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Ruleta;
+package Interfaces;
 
 /**
  *
  * @author Hp
  */
-public enum TipoFicha {
-    HOMBRE_LOBO,
-    VAMPIRO,
-    MUERTE,
-    ZOMBIE
+
+import Fichas.Ficha;
+import javax.swing.ImageIcon;
+
+public interface Providable {
+    ImageIcon IconoDe(Ficha ficha);
 }

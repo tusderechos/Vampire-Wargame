@@ -9,13 +9,14 @@ package Fichas;
  * @author Hp
  */
 
+import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;
 
 public class Muerte extends Ficha {
     
     public Muerte(Bando Color) {
-        super("Muerte", Color, 4, 3, 1); //4 puntos de ataque, 3 puntos de vida, 1 punto de escudo
+        super("Muerte", Color, TipoFicha.MUERTE, 4, 3, 1); //4 puntos de ataque, 3 puntos de vida, 1 punto de escudo
     }
         
     @Override

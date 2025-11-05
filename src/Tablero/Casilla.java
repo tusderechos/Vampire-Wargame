@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
 
 public class Casilla {
     
-    private Posicion Pos;
+    private final Posicion Pos;
     private Ficha Ocupante;
     
     public Casilla(Posicion Pos) {

@@ -11,6 +11,7 @@ package Fichas;
  * @author Hp
  */
 
+import Ruleta.TipoFicha;
 import Tablero.Posicion;
 import Tablero.Tablero;
 import java.util.ArrayList;
@@ -19,14 +20,16 @@ public abstract class Ficha {
     
     public String Nombre;
     public Bando Color;
+    public TipoFicha Tipo;
     public Posicion Pos;
     public int Ataque;
     public int Vidas;
     public int Escudo;
 
-    public Ficha(String Nombre, Bando Color, int Ataque, int Vidas, int Escudo) {
+    public Ficha(String Nombre, Bando Color, TipoFicha Tipo, int Ataque, int Vidas, int Escudo) {
         this.Nombre = Nombre;
         this.Color = Color;
+        this.Tipo = Tipo;
         this.Ataque = Ataque;
         this.Vidas = Vidas;
         this.Escudo = Escudo;
@@ -42,6 +45,10 @@ public abstract class Ficha {
     
     public Posicion getPos() {
         return Pos;
+    }
+    
+    public TipoFicha getTipo() {
+        return Tipo;
     }
     
     public void setPos(Posicion pos) {

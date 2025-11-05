@@ -9,18 +9,29 @@ package Fichas;
  * @author Hp
  */
 
+import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;
 
 public class Vampiro extends Ficha {
     
     public Vampiro(Bando Color) {
-        super("Vampiro", Color, 3, 4, 5); //3 puntos de ataque, 4 puntos de vida, 5 puntos de escudo
+        super("Vampiro", Color, TipoFicha.VAMPIRO, 3, 4, 5); //3 puntos de ataque, 4 puntos de vida, 5 puntos de escudo
     }
     
     @Override
     public ArrayList<Posicion> MovimientosBasicos(Tablero tablero) {
-        return tablero.Adyacentes8(Pos);
+        ArrayList<Posicion> res = new ArrayList<>();
+        
+        for (Posicion pos : tablero.Adyacentes8(Pos)) {
+            Casilla casilla = tablero.get(pos);
+            
+            if (casilla != null && casilla.CasillaLibre()) {
+                res.add(pos);
+            }
+        }
+        
+        return res;
     }
     
     @Override

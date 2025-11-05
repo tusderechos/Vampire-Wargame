@@ -81,7 +81,7 @@ public class MenuPrincipal extends JFrame {
         
         BtnJugar = new JButton("JUGAR VAMPIRE WARGAME");
         BtnJugar.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        BtnJugar.addActionListener(e -> onJugar());
+        BtnJugar.addActionListener(e -> onJugar());
 
         BtnCuenta = new JButton("MI CUENTA");
         BtnCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -128,6 +128,15 @@ public class MenuPrincipal extends JFrame {
         getRootPane().setDefaultButton(BtnJugar);
         
         PanelFondo.repaint();
+    }
+    
+    private void onJugar() {
+        if (UsuarioActivo == null || UsuarioActivo.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Primero inicia sesion o crea una cuenta!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        new PanelJuego().setVisible(true);
     }
     
     private void AbrirMiCuenta() {
