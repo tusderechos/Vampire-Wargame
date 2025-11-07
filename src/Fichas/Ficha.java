@@ -11,6 +11,7 @@ package Fichas;
  * @author Hp
  */
 
+import Enums.Bando;
 import Ruleta.TipoFicha;
 import Tablero.Posicion;
 import Tablero.Tablero;
@@ -61,6 +62,10 @@ public abstract class Ficha {
     
     public int getVidas() {
         return Vidas;
+    }
+
+    public void setVidas(int Vidas) {
+        this.Vidas = Vidas;
     }
     
     public int getEscudo() {

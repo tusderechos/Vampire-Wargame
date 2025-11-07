@@ -9,6 +9,7 @@ package Fichas;
  * @author Hp
  */
 
+import Enums.Bando;
 import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;

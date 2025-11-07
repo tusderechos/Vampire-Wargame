@@ -22,7 +22,7 @@ import java.net.URL;
 public class TableroVisual extends JPanel {
     
     private Tablero tablero;
-    private int TamanoCelda = 80;
+    public int TamanoCelda = 80;
     
     private Color ColorClaro = new Color(210, 210, 210);
     private Color ColorOscuro = new Color(60, 60, 60);
@@ -31,8 +31,6 @@ public class TableroVisual extends JPanel {
     private Color ColorDestino = new Color(30, 144, 255, 120);
     private Color ColorTexto = Color.WHITE;
     
-    private Posicion Seleccion;
-    private ArrayList<Posicion> Destino = new ArrayList<>();
     private boolean Habilitado = true;
     
     private ArrayList<Posicion> DestinosMovimiento = new ArrayList<>();
@@ -86,17 +84,6 @@ public class TableroVisual extends JPanel {
         this.Habilitado = valor;
     }
     
-    public void setSeleccion(Posicion pos) {
-        this.Seleccion = pos;
-    }
-    
-    public void setDestinos(ArrayList<Posicion> posicion) {
-        setDestinosMovimientos(posicion);
-        DestinosAtaque.clear();
-        
-        repaint();
-    }
-    
     public void setDestinosMovimientos(ArrayList<Posicion> movs) {
         DestinosMovimiento.clear();
         
@@ -108,20 +95,20 @@ public class TableroVisual extends JPanel {
     }
     
     public void setDestinosAtaques(ArrayList<Posicion> atks) {
-        DestinosMovimiento.clear();
+        DestinosAtaque.clear();
         
         if (atks != null) {
-            DestinosMovimiento.addAll(atks);
+            DestinosAtaque.addAll(atks);
         }
         
         repaint();
     }
     
     public void setDestinosInvocacion(ArrayList<Posicion> inv) {
-        DestinosMovimiento.clear();
+        DestinosInvocar.clear();
         
         if (inv != null) {
-            DestinosMovimiento.addAll(inv);
+            DestinosInvocar.addAll(inv);
         }
         
         repaint();
@@ -133,6 +120,8 @@ public class TableroVisual extends JPanel {
         
         repaint();
     }
+    
+    
     
     public void setTamanoCelda(int tamano) {
         if (tamano <= 24) {
@@ -236,28 +225,38 @@ public class TableroVisual extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        final Color COLOR_MOV = new Color(255, 215, 0, 110);
-        final Color COLOR_ATK = new Color(220, 60, 60, 140);
-        final Color COLOR_INV = new Color(60, 180, 120, 120);
+        final Color COLOR_MOV = new Color(255, 215, 0, 110); //Verde
+        final Color COLOR_ATK = new Color(220, 60, 60, 140); //Rojo
+        final Color COLOR_INV = new Color(60, 180, 120, 120); //Celeste
+        final Color COLOR_SEL = new Color(255, 220, 100); //Borde Seleccion
         
-        g2.setColor(COLOR_MOV);
-        for (Posicion d : DestinosMovimiento) {
-            if (tablero.Dentro(d)) {
-                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+        //Highlight de movimientos
+        if (DestinosMovimiento != null) {
+            g2.setColor(COLOR_MOV);
+            for (Posicion d : DestinosMovimiento) {
+                if (d != null && tablero.Dentro(d)) {
+                    g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+                }
             }
         }
         
-        g2.setColor(COLOR_ATK);
-        for (Posicion d : DestinosAtaque) {
-            if (tablero.Dentro(d)) {
-                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+        //Highlight de ataques normales/especiales
+        if (DestinosAtaque != null) {
+            g2.setColor(COLOR_ATK);
+            for (Posicion d : DestinosAtaque) {
+                if (d != null && tablero.Dentro(d)) {
+                    g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+                }
             }
         }
         
-        g2.setColor(COLOR_INV);
-        for (Posicion d : DestinosInvocar) {
-            if (tablero.Dentro(d)) {
-                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+        //Highlight de la invocacion de la muerte
+        if (DestinosInvocar != null) {
+            g2.setColor(COLOR_INV);
+            for (Posicion d : DestinosInvocar) {
+                if (d != null && tablero.Dentro(d)) {
+                    g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+                }
             }
         }
         
@@ -266,7 +265,7 @@ public class TableroVisual extends JPanel {
             int rx = SeleccionActual.Col * TamanoCelda;
             int ry = SeleccionActual.Fila * TamanoCelda;
             
-            g2.setColor(new Color(255, 220, 100));
+            g2.setColor(COLOR_SEL);
             g2.setStroke(new BasicStroke(3f));
             g2.drawRect(rx + 1, ry + 1, TamanoCelda - 2, TamanoCelda - 2);
         }

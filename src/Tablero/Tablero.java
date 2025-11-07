@@ -9,11 +9,12 @@ package Tablero;
  * @author Hp
  */
 
-import Fichas.Bando;
+import Enums.Bando;
 import javax.swing.JOptionPane;
 import java.util.ArrayList;
 import Fichas.*;
 import Ruleta.TipoFicha;
+import Interfaces.Capturable;
 
 public class Tablero {
     
@@ -21,6 +22,8 @@ public class Tablero {
     private int Cols;
     private Casilla[][] grid;
     public static final int TOTAL_PIEZAS_POR_JUGADOR = 6;
+    
+    private Capturable CapturaListener;
     
     public Tablero(int Filas, int Cols) {
         this.Filas = Filas;
@@ -36,6 +39,10 @@ public class Tablero {
     
     public Tablero() {
         this(6, 6);
+    }
+    
+    public void setCapturaListener(Capturable listener) {
+        this.CapturaListener = listener;
     }
     
     public int getFilas() {
@@ -141,11 +148,16 @@ public class Tablero {
             Ficha ficha = casilla.getOcupante();
             
             ficha.Eliminar();
+            
+            if (CapturaListener != null) {
+                CapturaListener.onCaptura(ficha);
+            }
+            
             casilla.LiberarCasilla();
         }
     }
     
-    public boolean Atacar(Posicion origen, Posicion destino) {
+    public boolean AtacarFicha(Posicion origen, Posicion destino, boolean especial) {
         if (!Dentro(origen) || !Dentro(destino)) {
             return false;
         }
@@ -172,27 +184,39 @@ public class Tablero {
             return false;
         }
         
-        //Reglas para los especiales
-        if (atacante instanceof Muerte) {
-            Muerte muerte = (Muerte) atacante;
+        if (!especial) {
             
-            if (ContienePos(muerte.PosicionesLanza(this), destino)) {
-                objetivo.RecibirDanoDirecto(2);
-            } else if (ContienePos(muerte.EnemigosAlrededorZombieAliados(this), destino)) {
-                objetivo.RecibirDano(1);
-            } else if (normales) {
+            if (!normales) {
                 objetivo.RecibirDano(atacante.getAtaque());
-            } else {
+            }
+            
+        } else {
+            
+            if (atacante instanceof Vampiro) {
                 return false;
             }
-        } else if (atacante instanceof Vampiro) {
-            if (esAdyacente8(origen, destino)) {
-                ((Vampiro) atacante).ChuparSangre(objetivo);
+            
+            if (!(atacante instanceof Muerte)) {
+                
+                if (!especiales) {
+                    return false;
+                }
+                
+                objetivo.RecibirDanoDirecto(atacante.getAtaque());
             } else {
-                objetivo.RecibirDano(atacante.getAtaque());
+                Muerte muerte = (Muerte) atacante;
+                
+                //Lanza
+                if (ContienePos(muerte.PosicionesLanza(this), destino)) {
+                    objetivo.RecibirDanoDirecto(2);
+                    
+                //Ataque con zombie
+                } else if (ContienePos(muerte.EnemigosAlrededorZombieAliados(this), destino)) {
+                    objetivo.RecibirDano(1);
+                } else {
+                    return false;
+                }
             }
-        } else {
-            objetivo.RecibirDano(atacante.getAtaque());
         }
         
         if (objetivo.getVidas() <= 0) {
@@ -202,13 +226,17 @@ public class Tablero {
         return true;
     }
     
+    public boolean Atacar(Posicion origen, Posicion destino) {
+        return AtacarFicha(origen, destino, false);
+    }
+    
     private boolean ContienePos(ArrayList<Posicion> lista, Posicion pos) {
         if (lista == null || pos == null) {
             return false;
         }
         
         for (Posicion posicion : lista) {
-            if (posicion.Fila == pos.Fila && posicion.Col == posicion.Col) {
+            if (posicion != null && posicion.Fila == pos.Fila && posicion.Col == posicion.Col) {
                 return true;
             }
         }
@@ -216,11 +244,86 @@ public class Tablero {
         return false;
     }
     
+    public boolean AtaqueChuparSangre(Posicion origen, Posicion destino) {
+        if (!Dentro(origen) || !Dentro(destino)) {
+            return false;
+        }
+        
+        Casilla casillaorigen = get(origen);
+        Casilla casilladestino = get(destino);
+        
+        if (casillaorigen == null || casilladestino == null || casillaorigen.CasillaLibre() || casilladestino.CasillaLibre()) {
+            return false;
+        }
+        
+        Ficha atacante = casillaorigen.getOcupante();
+        Ficha objetivo = casilladestino.getOcupante();
+        
+        if (!(atacante instanceof Vampiro)) {
+            return false;
+        }
+        if (atacante.getColor() == objetivo.getColor()) {
+            return false;
+        }
+        if (!esAdyacente8(origen, destino)) {
+            return false;
+        }
+        
+        objetivo.RecibirDanoDirecto(1);
+        
+        //Curar al vampiro todo poderoso roto y destructor de mundos
+        try {
+            atacante.setVidas(atacante.getVidas() + 1);
+        } catch (Exception e) {
+        }
+        
+        //Automaticamente quitar pieza al morir
+        try {
+            int vidarestante = objetivo.getVidas();
+            
+            if (vidarestante <= 0) {
+                QuitarFicha(destino);
+            }
+        } catch (Exception e) {
+        }
+        
+        return true;
+    }
+    
+    public boolean InvocarZombie(Posicion origen, Posicion destino) {
+        if (!Dentro(origen) || !Dentro(destino)) {
+            return false;
+        }
+        
+        Casilla casillaorigen = get(origen);
+        Casilla casilladestino = get(destino);
+        
+        if (casillaorigen == null || casilladestino == null || casillaorigen.CasillaLibre()) {
+            return false;
+        }
+        
+        Ficha muerte = casillaorigen.getOcupante();
+        
+        if (!(muerte instanceof Muerte)) {
+            return false;
+        }
+        if (!casilladestino.CasillaLibre()) {
+            return false;
+        }
+        
+        Zombie nuevo = new Zombie(muerte.getColor());
+        
+        casilladestino.OcuparCasilla(nuevo);
+        nuevo.setPos(destino);
+        
+        return true;
+    }
+    
     private boolean esAdyacente8(Posicion a, Posicion b) {
         int filasdiagonal = Math.abs(a.Fila - b.Fila);
         int colsdiagonal = Math.abs(a.Col - b.Col);
         
-        return (filasdiagonal <= 1 && colsdiagonal <= 1 && (filasdiagonal + colsdiagonal) > 0);
+        return (filasdiagonal <= 1 && colsdiagonal <= 1 && !(filasdiagonal == 0 && colsdiagonal == 0));
     }
     
     public ArrayList<Posicion> Adyacentes8(Posicion Pos) {

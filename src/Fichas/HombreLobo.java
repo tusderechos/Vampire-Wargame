@@ -9,6 +9,7 @@ package Fichas;
  * @author Hp
  */
 
+import Enums.Bando;
 import Ruleta.TipoFicha;
 import Tablero.*;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class HombreLobo extends Ficha {
     public ArrayList<Posicion> AtaquesNormales(Tablero tablero) {
         ArrayList<Posicion> Enemigos = new ArrayList<>();
         
-        for (Posicion adyacentes : tablero.Adyacentes4(Pos)) {
+        for (Posicion adyacentes : tablero.Adyacentes8(Pos)) {
             Casilla casilla = tablero.get(adyacentes);
             
             if (!casilla.CasillaLibre() && casilla.getOcupante().getColor() != this.Color) {
