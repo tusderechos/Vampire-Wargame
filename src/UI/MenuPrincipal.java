@@ -13,11 +13,15 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 public class MenuPrincipal extends JFrame {
     
     private JLabel LblTitulo;
     private JLabel LblSubtitulo;
+    
     private JButton BtnJugar;
     private JButton BtnCuenta;
     private JButton BtnReportes;
@@ -136,7 +140,67 @@ public class MenuPrincipal extends JFrame {
             return;
         }
         
-        new PanelJuego().setVisible(true);
+        String[] activos = (Memoria != null) ? Memoria.getUsuarios() : new String[0];
+        
+        if (activos.length < 2) {
+            JOptionPane.showMessageDialog(this, "Necesitas como minimo 2 jugadores para poder iniciar el juego!", "Insuficientes Jugadores", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        ArrayList<String> listarivales = new ArrayList<>();
+        
+        for (String usuario : activos) {
+            if (!usuario.equals(UsuarioActivo)) {
+                listarivales.add(usuario);
+            }
+        }
+        
+        if (listarivales.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay oponenetes conectados actualmente!", "Sin Rivales", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        JLabel LblBlancas = new JLabel("BLANCAS: " + UsuarioActivo);
+        
+        JComboBox<String> CmbNegras = new JComboBox<>(listarivales.toArray(new String[0]));
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(0, 1, 6, 6));
+        
+        panel.add(new JLabel("Jugador BLANCAS: "));
+        panel.add(LblBlancas);
+        panel.add(new JLabel("Jugador (Elige oponente): "));
+        panel.add(CmbNegras);
+        
+        int eleccion = JOptionPane.showConfirmDialog(this, panel, "Elegir Oponente", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        
+        if (eleccion != JOptionPane.OK_OPTION) {
+            return;
+        }
+        
+        String negras = (String) CmbNegras.getSelectedItem();
+        
+        if (negras == null || negras.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Debes seleccionar un oponente!", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        PanelJuego juego = new PanelJuego(Memoria, UsuarioActivo, negras);
+        this.setVisible(false);
+        
+        juego.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                MenuPrincipal.this.setVisible(true);
+            }
+            
+            @Override
+            public void windowClosing(WindowEvent e) {
+                MenuPrincipal.this.setVisible(true);
+            }
+        });
+        
+        juego.setVisible(true);
     }
     
     private void AbrirMiCuenta() {

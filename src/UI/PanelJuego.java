@@ -17,7 +17,11 @@ import java.util.ArrayList;
 import Tablero.*;
 import Fichas.*;
 import Interfaces.Resultable;
+import ManejoDatos.CuentasMem;
 import Ruleta.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class PanelJuego extends JFrame {
@@ -25,10 +29,12 @@ public class PanelJuego extends JFrame {
     private Tablero tablero;
     private TableroVisual tableroVisual;
     private PanelRuleta panelRuleta;
+    private MenuPrincipal menuPrincipal;
     
     private JLabel LblTitulo;
     private JLabel LblTurno;
     private JLabel LblFichaSeleccionada;
+    private JLabel LblJugadores;
     
     private JButton BtnTerminarTurno;
     private JButton BtnSalir;
@@ -44,13 +50,25 @@ public class PanelJuego extends JFrame {
     private boolean EsperandoOrigen = false;
     private boolean EsperandoDestino = false;
     
+    private boolean PartidaTerminada = false;
+    
     private final ArrayList<Posicion> DestinosMovimientos = new ArrayList<>();
     private final ArrayList<Posicion> DestinosAtaques = new ArrayList<>();
     
-    public PanelJuego() {
+    private CuentasMem Memoria;
+    private String JugadorBlancas;
+    private String JugadorNegras;
+    
+    private static final int PUNTOS_RETIRO = 3;
+    
+    public PanelJuego(CuentasMem Memoria, String JugadorBlancas, String JugadorNegras) {
         super("Vampire Wargame - Juego");
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        
+        this.Memoria = Memoria;
+        this.JugadorBlancas = (JugadorBlancas == null) ? "" : JugadorBlancas.trim();
+        this.JugadorNegras = (JugadorNegras == null) ? "" : JugadorNegras.trim();
         
         tablero = new Tablero();
         tablero.ColocarInicial();
@@ -72,6 +90,7 @@ public class PanelJuego extends JFrame {
         Lateral.setPreferredSize(new Dimension(260, 600));
         Lateral.setBackground(new Color(40, 40, 40));
         
+        
         LblTitulo = new JLabel("PANEL DE JUEGO");
         LblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         LblTitulo.setForeground(Color.WHITE);
@@ -82,11 +101,15 @@ public class PanelJuego extends JFrame {
         LblTurno.setForeground(Color.WHITE);
         LblTurno.setFont(new Font("Arial", Font.PLAIN, 14));
         
-        
         LblFichaSeleccionada = new JLabel("Ficha: --");
         LblFichaSeleccionada.setAlignmentX(Component.CENTER_ALIGNMENT);
         LblFichaSeleccionada.setForeground(Color.WHITE);
         LblFichaSeleccionada.setFont(new Font("Arial", Font.PLAIN, 14));
+        
+        LblJugadores = new JLabel("Blancas: " + JugadorBlancas + "  |   Negras: " + JugadorNegras);
+        LblJugadores.setAlignmentX(Component.CENTER_ALIGNMENT);
+        LblJugadores.setForeground(Color.WHITE);
+        LblJugadores.setFont(new Font("Arial", Font.PLAIN, 13));
         
         
         panelRuleta = new PanelRuleta();
@@ -112,6 +135,7 @@ public class PanelJuego extends JFrame {
         
         Lateral.add(Box.createVerticalStrut(16));
         Lateral.add(LblTitulo);
+        Lateral.add(LblJugadores);
         Lateral.add(Box.createVerticalStrut(12));
         Lateral.add(LblTurno);
         Lateral.add(LblFichaSeleccionada);
@@ -138,18 +162,14 @@ public class PanelJuego extends JFrame {
             }
         });
         
-        panelRuleta.setListener(new Resultable() {
-            @Override
-            public void Seleccionado(TipoFicha tipo) {
-                onFichaSeleccionada(tipo);
-            }
-        });
-        
+        TurnoActual = Bando.BLANCAS;
+        ActualizarTurnoUI();
         IniciarTurno();
     }
     
     private void IniciarTurno() {
-        LblTurno.setText("Turno: " + (TurnoActual == Bando.BLANCAS ? "BLANCAS" : "NEGRAS"));
+        ActualizarTurnoUI();
+        
         LblFichaSeleccionada.setText("Ficha: --");
         FichaActual = null;
         
@@ -174,7 +194,23 @@ public class PanelJuego extends JFrame {
     
     private void SiguienteTurno() {
         TurnoActual = (TurnoActual == Bando.BLANCAS) ? Bando.NEGRAS : Bando.BLANCAS;
+        ActualizarTurnoUI();
         IniciarTurno();
+    }
+    
+    private void ChequearFinPartida() {
+        if (PartidaTerminada) {
+            return;
+        }
+        int blancas = ContarPiezas(Bando.BLANCAS);
+        int negras = ContarPiezas(Bando.NEGRAS);
+        
+        if (blancas == 0 || negras == 0) {
+            String ganador = (blancas > 0) ? JugadorBlancas : JugadorNegras;
+            String perdedor = (blancas > 0) ? JugadorNegras : JugadorBlancas;
+        
+            TerminarPartida(ganador, perdedor, "Eliminacion Total");
+        }
     }
     
     private void onFichaSeleccionada(TipoFicha tipo) {
@@ -222,6 +258,36 @@ public class PanelJuego extends JFrame {
         if (EsperandoDestino && OrigenSeleccionado != null) {
             EjecutarAccionSegunDestino(OrigenSeleccionado, celda);
         }
+    }
+    
+    private void ActualizarTurnoUI() {
+        String bandostr = (TurnoActual == Bando.BLANCAS) ? "BLANCAS" : "NEGRAS";
+        LblTurno.setText("Turno: " + bandostr + " (" + NombreTurnoActual() + ")");
+    }
+    
+    private void SumarPuntos(String usuario, int delta, String motivo) {
+        if (Memoria == null || usuario == null) {
+            return;
+        }
+        
+        int indice = Memoria.getIndiceUsuario(usuario);
+        
+        if (indice < 0) {
+            return;
+        }
+        
+        Memoria.SumarPuntos(indice, delta);
+    }
+    
+    private void RegistrarLogPartida(String actor, String rival, String resultado) {
+        if (Memoria == null) {
+            return;
+        }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        String fecha = sdf.format(new Date());
+        
+        Memoria.AgregarLog(actor, fecha, rival, resultado);
     }
     
     private void SeleccionarOrigen(Posicion celda) {
@@ -332,6 +398,45 @@ public class PanelJuego extends JFrame {
         }
     }
     
+    private void TerminarPartida(String ganador, String perdedor, String causa) {
+        if (PartidaTerminada) {
+            return;
+        }
+        
+        PartidaTerminada = true;
+        
+        if (panelRuleta != null) {
+            panelRuleta.Detener();
+        }
+        
+        JOptionPane.showMessageDialog(this, "Victoria de " + ganador + "!\n (" + causa + ")");
+        
+        RegistrarLogPartida(ganador, perdedor, ganador + " ha ganado contra el jugador " + perdedor + "( " + causa + ")");
+        RegistrarLogPartida(perdedor, ganador, perdedor + " ha perdido contra el jugador " + ganador + "( " + causa + ")");
+        
+        if (Memoria != null) {
+            int indice = Memoria.getIndiceUsuario(ganador);
+            
+            if (indice != -1) {
+                Memoria.SumarPuntos(indice, 3);
+            }
+        }
+        
+        dispose();
+        
+        if (menuPrincipal != null) {
+            menuPrincipal.setVisible(true);
+        }
+    }
+    
+    private String NombreTurnoActual() {
+        return (TurnoActual == Bando.BLANCAS) ? JugadorBlancas : JugadorNegras;
+    }
+    
+    private String NombreTurnoOponente() {
+        return (TurnoActual == Bando.BLANCAS) ? JugadorNegras : JugadorBlancas;
+    }
+    
     private boolean Contiene(ArrayList<Posicion> lista, Posicion pos) {
         if (lista == null || pos == null) {
             return false;
@@ -344,6 +449,22 @@ public class PanelJuego extends JFrame {
         }
         
         return false;
+    }
+    
+    private int ContarPiezas(Bando bando) {
+        int c = 0;
+        
+        for (int fila = 0; fila < tablero.getFilas(); fila++) {
+            for (int col = 0; col < tablero.getColumnas(); col++) {
+                Casilla casilla = tablero.get(new Posicion(fila, col));
+                
+                if (casilla != null && !casilla.CasillaLibre() && casilla.getOcupante().getColor() == bando) {
+                    c++;
+                }
+            }
+        }
+        
+        return c;
     }
     
     private int PiezasPerdidas(Bando bando) {
@@ -364,6 +485,15 @@ public class PanelJuego extends JFrame {
     }
     
     private void FindeAccionyTurno() {
+        if (PartidaTerminada) {
+            return;
+        }
+        
+        ChequearFinPartida();
+        if (PartidaTerminada) {
+            return;
+        }
+        
         OrigenSeleccionado = null;
         EsperandoOrigen = false;
         EsperandoDestino = false;
@@ -383,6 +513,10 @@ public class PanelJuego extends JFrame {
         int Opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres retirarte de la partida?\nTu oponente ganara 3 puntos!\nEsta accion no es reversible", "Confirmacion", JOptionPane.YES_NO_OPTION);
         
         if (Opcion == JOptionPane.YES_OPTION) {
+            String rival = NombreTurnoOponente();
+            
+            SumarPuntos(rival, PUNTOS_RETIRO, "RETIRO DEL RIVAL");
+            RegistrarLogPartida(NombreTurnoActual(), rival, "RETIRO");
             dispose();
         }
     }

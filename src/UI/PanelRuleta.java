@@ -141,6 +141,13 @@ public class PanelRuleta extends JPanel {
         timer.start();
     }
     
+    public void Detener() {
+        if (timer != null) {
+            timer.stop();
+        }
+        
+        Girando = false;
+    }
     
     private void AnimacionTick() {
         double ahora = (double) Calendar.getInstance().getTimeInMillis();

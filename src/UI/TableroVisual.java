@@ -37,6 +37,8 @@ public class TableroVisual extends JPanel {
     
     private ArrayList<Posicion> DestinosMovimiento = new ArrayList<>();
     private ArrayList<Posicion> DestinosAtaque = new ArrayList<>();
+    private ArrayList<Posicion> DestinosInvocar = new ArrayList<>();
+    
     private Posicion SeleccionActual = null;
     
     private Clickable clickable;
@@ -89,8 +91,38 @@ public class TableroVisual extends JPanel {
     }
     
     public void setDestinos(ArrayList<Posicion> posicion) {
-        setDestinosMovimiento(posicion);
+        setDestinosMovimientos(posicion);
         DestinosAtaque.clear();
+        
+        repaint();
+    }
+    
+    public void setDestinosMovimientos(ArrayList<Posicion> movs) {
+        DestinosMovimiento.clear();
+        
+        if (movs != null) {
+            DestinosMovimiento.addAll(movs);
+        }
+        
+        repaint();
+    }
+    
+    public void setDestinosAtaques(ArrayList<Posicion> atks) {
+        DestinosMovimiento.clear();
+        
+        if (atks != null) {
+            DestinosMovimiento.addAll(atks);
+        }
+        
+        repaint();
+    }
+    
+    public void setDestinosInvocacion(ArrayList<Posicion> inv) {
+        DestinosMovimiento.clear();
+        
+        if (inv != null) {
+            DestinosMovimiento.addAll(inv);
+        }
         
         repaint();
     }
@@ -123,26 +155,6 @@ public class TableroVisual extends JPanel {
         
         if (grid != null) {
             this.ColorGrid = grid;
-        }
-        
-        repaint();
-    }
-    
-    public void setDestinosMovimiento(ArrayList<Posicion> lista) {
-        DestinosMovimiento.clear();
-        
-        if (lista != null) {
-            DestinosMovimiento.addAll(lista);
-        }
-        
-        repaint();
-    }
-    
-    public void setDestinosAtaque(ArrayList<Posicion> lista) {
-        DestinosAtaque.clear();
-        
-        if (lista != null) {
-            DestinosAtaque.addAll(lista);
         }
         
         repaint();
@@ -199,6 +211,7 @@ public class TableroVisual extends JPanel {
         
         Graphics2D g2d = (Graphics2D) g.create();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         
         int filas = tablero.getFilas();
         int cols = tablero.getColumnas();
@@ -220,6 +233,45 @@ public class TableroVisual extends JPanel {
             }
         }
         
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        final Color COLOR_MOV = new Color(255, 215, 0, 110);
+        final Color COLOR_ATK = new Color(220, 60, 60, 140);
+        final Color COLOR_INV = new Color(60, 180, 120, 120);
+        
+        g2.setColor(COLOR_MOV);
+        for (Posicion d : DestinosMovimiento) {
+            if (tablero.Dentro(d)) {
+                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+            }
+        }
+        
+        g2.setColor(COLOR_ATK);
+        for (Posicion d : DestinosAtaque) {
+            if (tablero.Dentro(d)) {
+                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+            }
+        }
+        
+        g2.setColor(COLOR_INV);
+        for (Posicion d : DestinosInvocar) {
+            if (tablero.Dentro(d)) {
+                g2.fillRect(d.Col * TamanoCelda, d.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
+            }
+        }
+        
+        //Borde de seleccion
+        if (SeleccionActual != null && tablero.Dentro(SeleccionActual)) {
+            int rx = SeleccionActual.Col * TamanoCelda;
+            int ry = SeleccionActual.Fila * TamanoCelda;
+            
+            g2.setColor(new Color(255, 220, 100));
+            g2.setStroke(new BasicStroke(3f));
+            g2.drawRect(rx + 1, ry + 1, TamanoCelda - 2, TamanoCelda - 2);
+        }
+        
+        //Grid
         g2d.setColor(ColorGrid);
         for (int col = 0; col < cols; col++) {
             int x = col * TamanoCelda;
@@ -227,70 +279,8 @@ public class TableroVisual extends JPanel {
         }
         
         for (int fila = 0; fila < filas; fila++) {
-            int y = filas * TamanoCelda;
+            int y = fila * TamanoCelda;
             g2d.drawLine(0, y, cols * TamanoCelda, y);
-        }
-        
-        
-        //Resaltado de seleccion
-        if (Seleccion != null && tablero.Dentro(Seleccion)) {
-            g2d.setColor(ColorSeleccion);
-            g2d.fillRect(Seleccion.Col * TamanoCelda, Seleccion.Fila * TamanoCelda, TamanoCelda, TamanoCelda);
-        }
-        
-        //Resaltado de destino
-        g2d.setColor(ColorDestino);
-        
-        for (Posicion destino : Destino) {
-            if (destino != null && tablero.Dentro(destino)) {
-                int x = destino.Col * TamanoCelda;
-                int y = destino.Fila * TamanoCelda;
-                
-                g.fillRect(x, y, TamanoCelda, TamanoCelda);
-            }
-        }
-        
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        
-        //Colores de overlay
-        Color colormover = new Color(100, 200, 120, 130); //Verde
-        Color coloratacar = new Color(220, 90, 90, 140); //Rojo
-        Color colorseleccion = new Color(255, 220, 100); //Dorado
-        
-        int celdaW = TamanoCelda;
-        int celdaH = TamanoCelda;
-        
-        //Movimientos
-        g2.setColor(colormover);
-        for (Posicion p : DestinosMovimiento) {
-            if (tablero.Dentro(p)) {
-                int rx = p.Col * celdaW;
-                int ry = p.Fila * celdaH;
-                
-                g2.fillRect(rx, ry, celdaW, celdaH);
-            }
-        }
-        
-        //Ataques
-        g2.setColor(coloratacar);
-        for (Posicion p : DestinosAtaque) {
-            if (tablero.Dentro(p)) {
-                int rx = p.Col * celdaW;
-                int ry = p.Fila * celdaH;
-                
-                g2.fillRect(rx, ry, celdaW, celdaH);
-            }
-        }
-        
-        //Seleccion de origen
-        if (SeleccionActual != null && tablero.Dentro(SeleccionActual)) {
-            int rx = SeleccionActual.Col * celdaW;
-            int ry = SeleccionActual.Fila * celdaH;
-            
-            g2.setColor(colorseleccion);
-            g2.setStroke(new BasicStroke(3f));
-            g2.drawRect(rx + 1, ry + 1, celdaW - 2, celdaH - 2);
         }
         
         //Aqui dibujo las fichas
@@ -325,7 +315,7 @@ public class TableroVisual extends JPanel {
                     } else if (ficha instanceof Muerte) {
                         ruta += (ficha.getColor().name().equals("BLANCAS")) ? "IconoMuerteBlanco.PNG" : "IconoMuerteNegro.PNG";
                     } else if (ficha instanceof Zombie) {
-                        ruta += (ficha.getColor().name().equals("BLANCAS")) ? "IconoZombieBlanco.PNG" : "IconoZombieoNegro.PNG";
+                        ruta += (ficha.getColor().name().equals("BLANCAS")) ? "IconoZombieBlanco.PNG" : "IconoZombieNegro.PNG";
                     } else {
                         ruta = null;
                     }
@@ -355,11 +345,7 @@ public class TableroVisual extends JPanel {
                     int radio = TamanoCelda - pad * 2;
                     
                     //Color por bando
-                    if (ficha.getColor().name().equals("BLANCAS")) {
-                        g2d.setColor(new Color(240, 240, 240));
-                    } else {
-                        g2d.setColor(new Color(30, 30, 30));
-                    }
+                    g2d.setColor(ficha.getColor().name().equals("BLANCAS") ? new Color(240, 240, 240) : new Color(30, 30, 30));
                     
                     g2d.fillOval(x + pad, y + pad, radio, radio);
                     
