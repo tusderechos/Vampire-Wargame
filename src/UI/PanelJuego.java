@@ -273,6 +273,8 @@ public class PanelJuego extends JFrame {
         BtnRuleta = new JButton("");
         
         BtnRuleta.addActionListener(e -> {
+            panelRuleta.GirarUnaVez();
+            
             if (panelRuleta.isGirando()) {
                 BtnRuleta.setText("DETENER");
             } else {

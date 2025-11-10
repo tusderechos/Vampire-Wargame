@@ -157,12 +157,5 @@ public class MenuInicial extends JFrame {
         label.setBackground(new Color(0, 0, 0, 190));
         label.setOpaque(true);
         label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0), BorderFactory.createLineBorder(new Color(0, 0, 0, 120), 2)));
-    }
-    
-    public static void main(String[] args) {
-        // TODO code application logic here
-        SwingUtilities.invokeLater(() -> {
-            new MenuInicial().setVisible(true);
-        });
-    }    
+    } 
 }
