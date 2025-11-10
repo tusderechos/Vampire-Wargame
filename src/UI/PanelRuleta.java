@@ -92,6 +92,10 @@ public class PanelRuleta extends JPanel {
         return Girando;
     }
     
+    public int getIntentos() {
+        return IntentosRestantes;
+    }
+    
     public void setIntentos(int n) {
         IntentosRestantes = Math.max(0, n);
     }
@@ -124,7 +128,6 @@ public class PanelRuleta extends JPanel {
                 return;
             }
             
-            IntentosRestantes--;
             IniciarGiroContinuo();
             return;
         }
@@ -187,6 +190,8 @@ public class PanelRuleta extends JPanel {
                 Girando = false;
                 FaseFrenado = false;
                 
+                RestarIntentos();
+                
                 TipoFicha resultado = CalcularResultadoPorAngulo(AnguloActual);
                 
                 if (Listener != null && resultado != null) {
@@ -197,6 +202,8 @@ public class PanelRuleta extends JPanel {
                 }
             }
         });
+        
+        timer.start();
     }
     
     public void Detener() {
