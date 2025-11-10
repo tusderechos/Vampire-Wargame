@@ -282,6 +282,7 @@ public class PanelJuego extends JFrame {
                 
         Lateral.add(Box.createVerticalStrut(8));
         Lateral.add(BtnSalir);
+        Lateral.add(BtnRuleta);
         Lateral.add(Box.createVerticalGlue());
         
         
