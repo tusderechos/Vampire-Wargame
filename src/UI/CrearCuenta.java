@@ -172,6 +172,12 @@ public class CrearCuenta extends JDialog {
             }
         }
         
+        if (!contrasena.matches(".*[A-Z]*.") || !confirmarcontra.matches(".*[A-Z]*.")) {
+            JOptionPane.showMessageDialog(this, "la contraseña debe tener como minimo una letra mayuscula!", "Error", JOptionPane.ERROR_MESSAGE);
+            PassContrasena.requestFocus();
+            return;
+        }
+        
         String simbolos = "!#$/()?-_.,<>|";
         boolean TieneSimbolo = false;
         
