@@ -156,7 +156,7 @@ public class MenuPrincipal extends JFrame {
         }
         
         if (listarivales.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No hay oponenetes conectados actualmente!", "Sin Rivales", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No hay oponentes conectados actualmente!", "Sin Rivales", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -185,15 +185,10 @@ public class MenuPrincipal extends JFrame {
             return;
         }
         
-        PanelJuego juego = new PanelJuego(Memoria, UsuarioActivo, negras);
+        PanelJuego juego = new PanelJuego(Memoria, UsuarioActivo, negras, this);
         this.setVisible(false);
         
         juego.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                MenuPrincipal.this.setVisible(true);
-            }
-            
             @Override
             public void windowClosing(WindowEvent e) {
                 MenuPrincipal.this.setVisible(true);

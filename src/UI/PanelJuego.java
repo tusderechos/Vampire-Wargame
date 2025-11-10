@@ -21,9 +21,9 @@ import Fichas.*;
 import Interfaces.Providable;
 import ManejoDatos.CuentasMem;
 import Ruleta.*;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.function.Consumer;
 
 
 public class PanelJuego extends JFrame {
@@ -61,6 +61,7 @@ public class PanelJuego extends JFrame {
     private ModoAccion ModoActual = ModoAccion.NINGUNO;
     
     private boolean PartidaTerminada = false;
+    private boolean RuletaEnProceso = false;
     
     private final ArrayList<Posicion> DestinosMovimientos = new ArrayList<>();
     private final ArrayList<Posicion> DestinosAtaques = new ArrayList<>();
@@ -72,12 +73,13 @@ public class PanelJuego extends JFrame {
     
     private static final int PUNTOS_RETIRO = 3;
     
-    public PanelJuego(CuentasMem Memoria, String JugadorBlancas, String JugadorNegras) {
+    public PanelJuego(CuentasMem Memoria, String JugadorBlancas, String JugadorNegras, MenuPrincipal menuPrincipal) {
         super("Vampire Wargame - Juego");
         setResizable(false);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         this.Memoria = Memoria;
+        this.menuPrincipal = menuPrincipal;
         this.JugadorBlancas = (JugadorBlancas == null) ? "" : JugadorBlancas.trim();
         this.JugadorNegras = (JugadorNegras == null) ? "" : JugadorNegras.trim();
         
@@ -127,12 +129,34 @@ public class PanelJuego extends JFrame {
         
         
         CmtBlancas = new JPanel();
-        CmtBlancas.setOpaque(false);
         CmtBlancas.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 4));
+        CmtBlancas.setOpaque(true);
+        CmtBlancas.setBackground(new Color(30, 30, 30));
+        CmtBlancas.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        CmtBlancas.setPreferredSize(new Dimension(220, 40));
+        CmtBlancas.setMaximumSize(new Dimension(220, 40));
+        CmtBlancas.setMinimumSize(new Dimension(220, 40));
         
         CmtNegras = new JPanel();
-        CmtNegras.setOpaque(false);
         CmtNegras.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 4));
+        CmtNegras.setOpaque(true);
+        CmtNegras.setBackground(new Color(30, 30, 30));
+        CmtNegras.setBorder(BorderFactory.createLineBorder(Color.WHITE));
+        CmtNegras.setPreferredSize(new Dimension(220, 40));
+        CmtNegras.setMaximumSize(new Dimension(220, 40));
+        CmtNegras.setMinimumSize(new Dimension(220, 40));
+        
+        JScrollPane ScrollCmtBlancas = new JScrollPane(CmtBlancas);
+        ScrollCmtBlancas.setPreferredSize(new Dimension(220, 45));
+        ScrollCmtBlancas.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        ScrollCmtBlancas.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        ScrollCmtBlancas.setBorder(null);
+        
+        JScrollPane ScrollCmtNegras = new JScrollPane(CmtNegras);
+        ScrollCmtNegras.setPreferredSize(new Dimension(220, 45));
+        ScrollCmtNegras.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        ScrollCmtNegras.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        ScrollCmtNegras.setBorder(null);
         
         Lateral.add(Box.createVerticalStrut(8));
         Lateral.add(LblTitulo);
@@ -148,11 +172,15 @@ public class PanelJuego extends JFrame {
         lblcmtnegro.setForeground(Color.WHITE);
         
         Lateral.add(lblcmtblanco);
-        Lateral.setForeground(Color.WHITE);
-        Lateral.add(CmtBlancas);
+        Lateral.add(Box.createVerticalStrut(2));
+        Lateral.add(ScrollCmtBlancas);
+        
         Lateral.add(Box.createVerticalStrut(6));
+        
         Lateral.add(lblcmtnegro);
-        Lateral.add(CmtNegras);
+        Lateral.add(Box.createVerticalStrut(2));
+        Lateral.add(ScrollCmtNegras);
+        
         Lateral.add(Box.createVerticalStrut(10));
         
         LogArea = new JTextArea(8, 20);
@@ -167,7 +195,7 @@ public class PanelJuego extends JFrame {
         ScrollLog.setAlignmentX(Component.CENTER_ALIGNMENT);
         ScrollLog.setPreferredSize(new Dimension(204, 140));
         
-        JLabel lblregistro = new JLabel("Regitro de Jugadas");
+        JLabel lblregistro = new JLabel("Registro de Jugadas");
         lblregistro.setForeground(Color.WHITE);
         
         Lateral.add(lblregistro);
@@ -176,32 +204,76 @@ public class PanelJuego extends JFrame {
         Lateral.add(Box.createVerticalStrut(10));
         
         tablero.setCapturaListener(ficha -> {
-            ImageIcon icono = (providable != null) ? providable.IconoDe(ficha) : null;
-            JLabel lblicono = new JLabel(icono != null ? icono : new ImageIcon());
+            if (ficha == null) {
+                return;
+            }
             
+            System.out.println("CAPTURADA PANEL: " + ficha.getNombre() + " (" + ficha.getColor() + ")");
+            
+            //Intentar usar el mismo povidable que lo que tiene el tablero visual
+            ImageIcon iconobase = (providable != null) ? providable.IconoDe(ficha) : null;
+                        
+            if (iconobase == null) {
+                String ruta = "src/images/";
+                
+                if (ficha instanceof HombreLobo) {
+                    ruta += (ficha.getColor() == Bando.BLANCAS) ? "IconoHombreLoboBlanco.PNG" : "IconoHombreLoboNegro.PNG";
+                } else if (ficha instanceof Vampiro) {
+                    ruta += (ficha.getColor() == Bando.BLANCAS) ? "IconoVampiroBlanco.PNG" : "IconoVampiroNegro.PNG";
+                } else if (ficha instanceof Muerte) {
+                    ruta += (ficha.getColor() == Bando.BLANCAS) ? "IconoMuerteBlanco.PNG" : "IconoMuerteNegro.PNG";
+                } else if (ficha instanceof Zombie) {
+                    ruta += (ficha.getColor() == Bando.BLANCAS) ? "IconoZombieBlanco.PNG" : "IconoZombieNegro.PNG";
+                } else {
+                    ruta = null;
+                }
+                
+                if (ruta != null) {                    
+                    iconobase = new ImageIcon(ruta);
+                }
+            }
+            
+            //Si no hay imagen, no se pone nada
+            if (iconobase == null) {
+                System.out.println("No se pudo cargar icono para " + ficha.getNombre());
+                return;
+            }
+            
+            Image imagen = iconobase.getImage().getScaledInstance(24, 24, Image.SCALE_SMOOTH);
+            ImageIcon iconoescalado = new ImageIcon(imagen);
+            
+            JLabel lblicono = new JLabel(iconoescalado);
             lblicono.setPreferredSize(new Dimension(28, 28));
             
+            //Agregar al cementerio correcto segun el color de la ficha capturada
             if (ficha.getColor() == Bando.BLANCAS) {
+                System.out.println(" -> va a CEMENTERIO BLANCO");
                 CmtBlancas.add(lblicono);
                 CmtBlancas.revalidate();
                 CmtBlancas.repaint();
             } else {
+                System.out.println(" -> va a CEMENTERIO NEGRO");
                 CmtNegras.add(lblicono);
                 CmtNegras.revalidate();
                 CmtNegras.repaint();
-            }            
+            }
         });
         
         
         panelRuleta = new PanelRuleta();
         panelRuleta.setAlignmentX(Component.CENTER_ALIGNMENT);
-        panelRuleta.setListener(this::onFichaSeleccionada);
         
         ImageIcon IconoLobo = new ImageIcon("src/images/ruleta_hombrelobo.PNG");
         ImageIcon IconoVampiro = new ImageIcon("src/images/ruleta_vampiro.PNG");
         ImageIcon IconoMuerte = new ImageIcon("src/images/ruleta_muerte.PNG");
         
         panelRuleta.setIcons(IconoLobo, IconoVampiro, IconoMuerte);
+        
+        panelRuleta.setListener(res -> {
+            SwingUtilities.invokeLater(() -> {
+                onResultadoRuleta(res);
+            });
+        });
         
         Lateral.add(panelRuleta);
         Lateral.add(Box.createVerticalStrut(16));
@@ -239,19 +311,6 @@ public class PanelJuego extends JFrame {
         TurnoActual = Bando.BLANCAS;
         ActualizarTurnoUI();
         IniciarTurno();        
-    }
-    
-    private void log(String msg) {
-        if (LogArea == null) {
-            return;
-        }
-        
-        LogArea.append(msg + "\n");
-        LogArea.setCaretPosition(LogArea.getDocument().getLength());
-    }
-    
-    private static String pos(Posicion p) {
-        return "(" + p.Fila + "," + p.Col + ")";
     }
     
     private void MostrarMenuAccion(Ficha ficha, Posicion celda) {
@@ -315,28 +374,27 @@ public class PanelJuego extends JFrame {
     }
     
     private void IniciarTurno() {
-        ActualizarTurnoUI();
+        ModoActual = ModoAccion.NINGUNO;
         
         LblFichaSeleccionada.setText("Ficha: --");
         FichaActual = null;
         
         OrigenSeleccionado = null;
-        EsperandoOrigen = false;
+        EsperandoOrigen = true;
         EsperandoDestino = false;
         
         DestinosMovimientos.clear();
         DestinosAtaques.clear();
+        DestinosInvocacion.clear();
         
         tableroVisual.limpiarDestinos();
         tableroVisual.LimpiarSeleccion();
+        tableroVisual.repaint();
         
         panelRuleta.setIntentosPorPiezasPerdidas(PiezasPerdidas(TurnoActual));
         
-        Girar();
-    }
-    
-    private void Girar() {
-        panelRuleta.GiraryDetener(3000);
+        ActualizarTurnoUI();
+        IntentarGiroRuletaConPausa();
     }
     
     private void SiguienteTurno() {
@@ -360,41 +418,6 @@ public class PanelJuego extends JFrame {
         }
     }
     
-    private void onFichaSeleccionada(TipoFicha tipo) {
-        //Resaltar solamente las fichas del tipo seleccionado
-        ArrayList<Posicion> posiciones = tablero.BuscarFichasPorTipo(TurnoActual, tipo);
-        
-        if (posiciones == null || posiciones.isEmpty()) {            
-            if (panelRuleta.QuedanIntentos()) {
-                panelRuleta.RestarIntentos();
-                
-                JOptionPane.showMessageDialog(this, "No tienes niguna ficha " + tipo, "Sin fichas disponibles", JOptionPane.WARNING_MESSAGE);
-                
-                Girar();
-            } else {
-                JOptionPane.showMessageDialog(this, "No tienes ninguna ficha " + tipo, "Sin fichas disponibles", JOptionPane.WARNING_MESSAGE);
-                SiguienteTurno();
-            }
-            
-            return;
-        }
-        
-        FichaActual = tipo;
-        LblFichaSeleccionada.setText("Ficha: " + tipo.name());
-        
-        tableroVisual.setDestinosMovimientos(posiciones);
-        tableroVisual.setDestinosAtaques(new ArrayList<Posicion>());
-        tableroVisual.setDestinosInvocacion(new ArrayList<Posicion>());
-        tableroVisual.repaint();
-        
-        EsperandoOrigen = true;
-        EsperandoDestino = false;
-        OrigenSeleccionado = null;
-        
-        DestinosMovimientos.clear();
-        DestinosAtaques.clear();
-    }
-    
     private void ManejarClickTablero(int origen, int destino) {
         Posicion celda = tableroVisual.PixelaPos(origen, destino);
         
@@ -408,6 +431,23 @@ public class PanelJuego extends JFrame {
         }
         
         if (EsperandoDestino && OrigenSeleccionado != null) {
+            Casilla casilla = tablero.get(celda);
+            
+            if (casilla != null && !casilla.CasillaLibre() && casilla.getOcupante().getColor() == TurnoActual) {
+                ModoActual = ModoAccion.NINGUNO;
+                
+                DestinosAtaques.clear();
+                DestinosInvocacion.clear();
+                DestinosMovimientos.clear();
+                
+                tableroVisual.limpiarDestinos();
+                tableroVisual.LimpiarSeleccion();
+                
+                SeleccionarOrigen(celda);
+                
+                return;
+            }
+            
             EjecutarAccionSegunDestino(OrigenSeleccionado, celda);
         }
     }
@@ -462,11 +502,17 @@ public class PanelJuego extends JFrame {
         }
         
         OrigenSeleccionado = celda;
+        
+        ModoActual = ModoAccion.NINGUNO;
         EsperandoOrigen = false;
         EsperandoDestino = true;
         
         DestinosMovimientos.clear();
         DestinosAtaques.clear();
+        DestinosInvocacion.clear();
+        
+        tableroVisual.limpiarDestinos();
+        tableroVisual.LimpiarSeleccion();
         
         //Movimientos
         ArrayList<Posicion> movsbasicos = ficha.MovimientosBasicos(tablero);
@@ -491,24 +537,38 @@ public class PanelJuego extends JFrame {
         if (ficha instanceof Muerte) {
             Muerte muerte = (Muerte) ficha;
             
+            //La lanza bendita
             ArrayList<Posicion> lanza = muerte.PosicionesLanza(tablero);
             if (lanza != null) {
                 DestinosAtaques.addAll(lanza);
             }
             
-            ArrayList<Posicion> zombies = muerte.EnemigosAlrededorZombieAliados(tablero);
-            if (zombies != null) {
-                DestinosInvocacion.addAll(zombies);
+            //La maldicion de invocar zombies
+            for (int fila = 0; fila < tablero.getFilas(); fila++) {
+                for (int col = 0; col < tablero.getColumnas(); col++) {
+                    Posicion pos = new Posicion(fila, col);
+                    Casilla casillaz = tablero.get(pos);
+                    
+                    if (casillaz != null && casillaz.CasillaLibre()) {
+                        DestinosInvocacion.add(pos);
+                    }
+                }
             }
         }
 
         
-        tableroVisual.setDestinosMovimientos(DestinosMovimientos);
-        tableroVisual.setDestinosAtaques(DestinosAtaques);
-        tableroVisual.setDestinosInvocacion(DestinosInvocacion);
+        tableroVisual.setDestinosMovimientos(new ArrayList<Posicion>());
+        tableroVisual.setDestinosAtaques(new ArrayList<Posicion>());
+        tableroVisual.setDestinosInvocacion(new ArrayList<Posicion>());
         
         tableroVisual.Seleccionar(OrigenSeleccionado);
         tableroVisual.repaint();
+        
+        //Resaltar todas las piezas que sean del mismo tipo y color que la seleccionada para que el usuario sepa que es lo que tiene que mover
+        ArrayList<Posicion> mismasfichas = tablero.BuscarFichasPorTipo(ficha.getColor(), ficha.getTipo());
+        if (mismasfichas != null && !mismasfichas.isEmpty()) {
+            tableroVisual.setDestinosAuxiliares(mismasfichas);
+        }
         
         MostrarMenuAccion(ficha, celda);
     }
@@ -523,6 +583,19 @@ public class PanelJuego extends JFrame {
         boolean movimiento = Contiene(DestinosMovimientos, destino);
         boolean ataque = Contiene(DestinosAtaques, destino);
         boolean invocar = Contiene(DestinosInvocacion, destino);
+        
+        if (ModoActual == ModoAccion.NINGUNO) {
+            if (movimiento) {
+                ActivarModo(ModoAccion.MOVER);
+            } else if (ataque) {
+                ActivarModo(ModoAccion.ATACAR);
+            } else if (invocar) {
+                ActivarModo(ModoAccion.INVOCAR);
+            } else {
+                JOptionPane.showMessageDialog(this, "Esa casilla no es valida para esta ficha", "Accion no permitida", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
         
         Ficha ficha = casillaorigen.getOcupante();
         String jugador = (TurnoActual == Bando.BLANCAS) ? JugadorBlancas : JugadorNegras;
@@ -542,7 +615,7 @@ public class PanelJuego extends JFrame {
                     tablero.MoverFicha(origen, destino);
                     
                     if (LogArea != null) {
-                        LogArea.append(jugador + " movio " + ficha.getNombre() + " de " + posorg + " a " + posdest + "\n");
+                        LogArea.append("• " + jugador + " movio " + ficha.getNombre() + " de " + posorg + " a " + posdest + "\n");
                         LogArea.setCaretPosition(LogArea.getDocument().getLength());
                     }
                     
@@ -569,9 +642,9 @@ public class PanelJuego extends JFrame {
                     
                     if (LogArea != null) {
                         if (eliminado) {
-                            LogArea.append(jugador + " ataco con " + ficha.getNombre() + " en " + posdest + " y elimino a " + nombreobj + "\n");
+                            LogArea.append("• " + jugador + " ataco con " + ficha.getNombre() + " en " + posdest + " y elimino a " + nombreobj + "\n");
                         } else {
-                            LogArea.append(jugador + " ataco con " + ficha.getNombre() + " a " + nombreobj + " en " + posdest + "\n");
+                            LogArea.append("• " + jugador + " ataco con " + ficha.getNombre() + " a " + nombreobj + " en " + posdest + "\n");
                         }
                         
                         LogArea.setCaretPosition(LogArea.getDocument().getLength());
@@ -598,7 +671,7 @@ public class PanelJuego extends JFrame {
                     }
                     
                     if (LogArea != null) {
-                        LogArea.append(jugador + " lanzo ATAQUE ESPECIAL con " + ficha.getNombre() + " sobre " + posdest + "\n");
+                        LogArea.append("• " + jugador + " lanzo ATAQUE ESPECIAL con " + ficha.getNombre() + " sobre " + posdest + "\n");
                         LogArea.setCaretPosition(LogArea.getDocument().getLength());
                     }
                     
@@ -630,7 +703,7 @@ public class PanelJuego extends JFrame {
                     eliminado2 = (casdespues == null) || casdespues.CasillaLibre();
                     
                     if (LogArea != null) {
-                        LogArea.append(jugador + " uso CHUPAR SANGRE con " + ficha.getNombre() + " en " + posdest + (eliminado2 ? " y elimino a" + nombreobj2 : "") + "\n");
+                        LogArea.append("• " + jugador + " uso CHUPAR SANGRE con " + ficha.getNombre() + " en " + posdest + (eliminado2 ? " y elimino a " + nombreobj2 : "") + "\n");
                         LogArea.setCaretPosition(LogArea.getDocument().getLength());
                     }
                     
@@ -649,7 +722,7 @@ public class PanelJuego extends JFrame {
                     }
                     
                     if (LogArea != null) {
-                        LogArea.append(jugador + " incovo un ZOMBIE en " + posdest + "\n");
+                        LogArea.append("• " + jugador + " incovo un ZOMBIE en " + posdest + "\n");
                         LogArea.setCaretPosition(LogArea.getDocument().getLength());
                     }
                     
@@ -669,6 +742,15 @@ public class PanelJuego extends JFrame {
                 tableroVisual.repaint();
                 
                 FindeAccionyTurno();
+                
+                ModoActual = ModoAccion.NINGUNO;
+                EsperandoOrigen = true;
+                EsperandoDestino = false;
+                OrigenSeleccionado = null;
+                
+                DestinosAtaques.clear();
+                DestinosInvocacion.clear();
+                DestinosMovimientos.clear();
             }
             
         } catch (Exception e) {
@@ -779,41 +861,89 @@ public class PanelJuego extends JFrame {
         DestinosMovimientos.clear();
         DestinosAtaques.clear();
         
-        if (panelRuleta.QuedanIntentos()) {
-            panelRuleta.RestarIntentos();
-            Girar();
-        } else {
-            SiguienteTurno();
-        }
+        IntentarGiroRuletaConPausa();
     }
     
     private void ActivarModo(ModoAccion modo) {
         ModoActual = modo;
         
+        ArrayList<Posicion> vacia = new ArrayList<>();
+        
         switch (modo) {
             case MOVER:
-                tableroVisual.setDestinosAtaques(new ArrayList<Posicion>());
-                tableroVisual.setDestinosInvocacion(new ArrayList<Posicion>());
+                tableroVisual.setDestinosMovimientos(new ArrayList<>(DestinosMovimientos));
+                tableroVisual.setDestinosAtaques(vacia);
+                tableroVisual.setDestinosInvocacion(vacia);
                 break;
                 
             case ATACAR:
             case ATACAR_ESPECIAL:
             case ESPECIAL_VAMPIRO:
-                tableroVisual.setDestinosMovimientos(new ArrayList<Posicion>());
-                tableroVisual.setDestinosInvocacion(new ArrayList<Posicion>());
+                tableroVisual.setDestinosMovimientos(vacia);
+                tableroVisual.setDestinosAtaques(new ArrayList<>(DestinosAtaques));
+                tableroVisual.setDestinosInvocacion(vacia);
                 break;
                 
             case INVOCAR:
-                tableroVisual.setDestinosAtaques(new ArrayList<Posicion>());
-                tableroVisual.setDestinosMovimientos(new ArrayList<Posicion>());
+                tableroVisual.setDestinosAtaques(vacia);
+                tableroVisual.setDestinosMovimientos(vacia);
+                tableroVisual.setDestinosMovimientos(new ArrayList<>(DestinosInvocacion));
                 break;
-                
+            
+            case NINGUNO:
             default:
+                tableroVisual.setDestinosAtaques(vacia);
+                tableroVisual.setDestinosInvocacion(vacia);
+                tableroVisual.setDestinosMovimientos(vacia);
                 break;
         }
         
         tableroVisual.repaint();
-        LblFichaSeleccionada.setText("Modo: " + ModoActual.getDescripcion());
+        LblFichaSeleccionada.setText("Modo: " + ModoActual.getDescripcion().toUpperCase());
+    }
+    
+    private void IntentarGiroRuletaConPausa() {
+        if (RuletaEnProceso) {
+            return;
+        }
+        
+        if (!panelRuleta.QuedanIntentos()) {
+            SiguienteTurno();
+            return;
+        }
+        
+        RuletaEnProceso = true;
+        panelRuleta.GirarUnaVez();
+    }
+    
+    private void onResultadoRuleta(TipoFicha resultado) {
+        boolean tiene = tablero.JugadorTieneFichaTipo(TurnoActual, resultado);
+        
+        if (!tiene) {
+            JOptionPane.showMessageDialog(this, "No tienes una ficha " + resultado + "\nSe ha consumido 1 intento", "Ruleta", JOptionPane.INFORMATION_MESSAGE);
+            
+            new Timer(1200, e -> {
+                ((Timer) e.getSource()).stop();
+                
+                RuletaEnProceso = false;
+                IntentarGiroRuletaConPausa(); //Reinentar si aun quedan intentos
+            }).start();
+            
+            return;
+        }
+        
+        FichaActual = resultado;
+        LblFichaSeleccionada.setText("Ficha: " + resultado.name());
+        
+        EsperandoOrigen = true;
+        EsperandoDestino = false;
+        OrigenSeleccionado = null;
+        
+        tableroVisual.limpiarDestinos();
+        tableroVisual.LimpiarSeleccion();
+        tableroVisual.repaint();
+        
+        RuletaEnProceso = false;
     }
     
     private void onSalir() {

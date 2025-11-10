@@ -23,7 +23,9 @@ public class HombreLobo extends Ficha {
     @Override
     public ArrayList<Posicion> MovimientosBasicos(Tablero tablero) {
         ArrayList<Posicion> MovsPosibles = new ArrayList<>();
-        int[][] Direcciones = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int[][] Direcciones = {
+            {-1, 0}, {1, 0}, {0, -1}, {0, 1}, //Movimientos rectos
+            {-1, -1}, {-1, 1}, {1, -1}, {1, 1}}; //Movimientos diagonales
         
         for (int[] Direccion : Direcciones) {
             Posicion destino = new Posicion(Pos.Fila + Direccion[0], Pos.Col + Direccion[1]);
@@ -60,12 +62,30 @@ public class HombreLobo extends Ficha {
     @Override
     public ArrayList<Posicion> AtaquesNormales(Tablero tablero) {
         ArrayList<Posicion> Enemigos = new ArrayList<>();
+        Posicion pos = getPos();
         
-        for (Posicion adyacentes : tablero.Adyacentes8(Pos)) {
-            Casilla casilla = tablero.get(adyacentes);
-            
-            if (!casilla.CasillaLibre() && casilla.getOcupante().getColor() != this.Color) {
-                Enemigos.add(adyacentes);
+        if (pos == null) {
+            return Enemigos;
+        }
+        
+        for (int fila = -1; fila <= 1; fila++) {
+            for (int col = -1; col <= 1; col++) {
+                
+                if (fila == 0 && col == 0) {
+                    continue;
+                }
+                
+                Posicion p = new Posicion(pos.Fila + fila, pos.Col + col);
+                
+                if (!tablero.Dentro(p)) {
+                    continue;
+                }
+                
+                Casilla casilla = tablero.get(p);
+                
+                if (casilla != null && !casilla.CasillaLibre() && casilla.getOcupante().getColor() != this.Color) {
+                    Enemigos.add(p);
+                }
             }
         }
         

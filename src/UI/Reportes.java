@@ -241,8 +241,8 @@ public class Reportes extends JFrame {
         ScrollLogs.setOpaque(false);
         ScrollLogs.getViewport().setOpaque(false);
         ScrollLogs.getViewport().setBackground(fondosemi);
-        AjustarAnchosProporcional(TblLogs, 35, 45, 20);
-        HookResizeProporcional(ScrollLogs, () -> AjustarAnchosProporcional(TblLogs, 35, 45, 20));
+        AjustarAnchosProporcional(TblLogs, 25, 25, 50);
+        HookResizeProporcional(ScrollLogs, () -> AjustarAnchosProporcional(TblLogs, 20, 30, 50));
         
         PanelTablas.add(ScrollRanking);
         PanelTablas.add(ScrollLogs);

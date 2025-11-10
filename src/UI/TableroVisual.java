@@ -27,8 +27,6 @@ public class TableroVisual extends JPanel {
     private Color ColorClaro = new Color(210, 210, 210);
     private Color ColorOscuro = new Color(60, 60, 60);
     private Color ColorGrid = new Color(30, 30, 30, 80);
-    private Color ColorSeleccion = new Color(255, 215, 0, 120);
-    private Color ColorDestino = new Color(30, 144, 255, 120);
     private Color ColorTexto = Color.WHITE;
     
     private boolean Habilitado = true;
@@ -36,9 +34,10 @@ public class TableroVisual extends JPanel {
     private ArrayList<Posicion> DestinosMovimiento = new ArrayList<>();
     private ArrayList<Posicion> DestinosAtaque = new ArrayList<>();
     private ArrayList<Posicion> DestinosInvocar = new ArrayList<>();
+    private ArrayList<Posicion> DestinosAuxiliares = new ArrayList<>();
     
     private Posicion SeleccionActual = null;
-    
+        
     private Clickable clickable;
     private Providable providable;
     
@@ -114,14 +113,32 @@ public class TableroVisual extends JPanel {
         repaint();
     }
     
-    public void limpiarDestinos() {
-        DestinosMovimiento.clear();
-        DestinosAtaque.clear();
+    public void setDestinosAuxiliares(ArrayList<Posicion> lista) {
+        DestinosAuxiliares.clear();
+        
+        if (lista != null) {
+            DestinosAuxiliares.addAll(lista);
+        }
         
         repaint();
     }
     
-    
+    public void limpiarDestinos() {
+        if (DestinosAtaque != null) {
+            DestinosAtaque.clear();
+        }
+        if (DestinosInvocar != null) {
+            DestinosInvocar.clear();
+        }
+        if (DestinosMovimiento != null) {
+            DestinosMovimiento.clear();
+        }
+        if (DestinosAuxiliares != null) {
+            DestinosAuxiliares.clear();
+        }
+        
+        repaint();
+    }
     
     public void setTamanoCelda(int tamano) {
         if (tamano <= 24) {
@@ -217,6 +234,18 @@ public class TableroVisual extends JPanel {
                 
                 int x = col * TamanoCelda;
                 int y = fila * TamanoCelda;
+                
+                g2d.fillRect(x, y, TamanoCelda, TamanoCelda);
+            }
+        }
+        
+        //Resalar fichas del mismo tipo
+        if (DestinosAuxiliares != null && !DestinosAuxiliares.isEmpty()) {
+            g2d.setColor(new Color(255, 255, 0, 80)); //Amarillo transparente
+            
+            for (Posicion p : DestinosAuxiliares) {
+                int x = p.Col * TamanoCelda;
+                int y = p.Fila * TamanoCelda;
                 
                 g2d.fillRect(x, y, TamanoCelda, TamanoCelda);
             }

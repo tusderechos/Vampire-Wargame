@@ -45,6 +45,12 @@ public class Tablero {
         this.CapturaListener = listener;
     }
     
+    private void NotificarCaptura(Ficha ficha) {
+        if (CapturaListener != null && ficha != null) {
+            CapturaListener.onCaptura(ficha);
+        }
+    }
+    
     public int getFilas() {
         return Filas;
     }
@@ -139,22 +145,22 @@ public class Tablero {
     }
     
     public void QuitarFicha(Posicion Pos) {
-        Casilla casilla = get(Pos);
-        
-        if (casilla == null) {
+        if (!Dentro(Pos)) {
             return;
         }
-        if (!casilla.CasillaLibre()) {
-            Ficha ficha = casilla.getOcupante();
-            
-            ficha.Eliminar();
-            
-            if (CapturaListener != null) {
-                CapturaListener.onCaptura(ficha);
-            }
-            
-            casilla.LiberarCasilla();
+        
+        Casilla casilla = get(Pos);
+        
+        if (casilla == null || casilla.CasillaLibre()) {
+            return;
         }
+        
+        Ficha capturada = casilla.getOcupante();
+        casilla.LiberarCasilla();
+        
+        System.out.println("QuitarFicha: " + capturada);
+        
+        NotificarCaptura(capturada);
     }
     
     public boolean AtacarFicha(Posicion origen, Posicion destino, boolean especial) {
@@ -187,12 +193,16 @@ public class Tablero {
         if (!especial) {
             
             if (!normales) {
-                objetivo.RecibirDano(atacante.getAtaque());
+                //Si no esta en la lita de ataques normales, no se puede usar como ataque normal
+                return false;
             }
             
-        } else {
+            objetivo.RecibirDano(atacante.getAtaque());
             
+        } else {
+            //Ataque especial
             if (atacante instanceof Vampiro) {
+                //Falso porque el vampiro usa su propia ruta especial, que es la de chupar sangre, no usa esta funcion
                 return false;
             }
             
@@ -206,7 +216,7 @@ public class Tablero {
             } else {
                 Muerte muerte = (Muerte) atacante;
                 
-                //Lanza
+                //Lanza bendita
                 if (ContienePos(muerte.PosicionesLanza(this), destino)) {
                     objetivo.RecibirDanoDirecto(2);
                     
@@ -408,5 +418,23 @@ public class Tablero {
         }
         
         return resultado;
+    }
+    
+    public boolean JugadorTieneFichaTipo(Bando bando, TipoFicha tipo) {
+        for (int fila = 0; fila < getFilas(); fila++) {
+            for (int col = 0; col < getColumnas(); col++) {
+                Casilla casilla = get(new Posicion(fila, col));
+                
+                if (casilla != null && !casilla.CasillaLibre()) {
+                    Ficha ficha = casilla.getOcupante();
+                    
+                    if (ficha.getColor() == bando && ficha.getTipo() == tipo) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        return false;
     }
 }

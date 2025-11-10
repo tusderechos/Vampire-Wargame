@@ -22,6 +22,8 @@ public class PanelRuleta extends JPanel {
     
     private final ArrayList<TipoFicha> Items = new ArrayList<>();
     
+    private TipoFicha ResultadoPendiente = null;
+    
     private ImageIcon IconoLobo;
     private ImageIcon IconoMuerte;
     private ImageIcon IconoVampiro;
@@ -37,6 +39,7 @@ public class PanelRuleta extends JPanel {
     };
     
     private int IntentosRestantes = 1;
+    private boolean Girando = false;
     
     private final Random random = new Random();
     private Timer timer;
@@ -49,9 +52,7 @@ public class PanelRuleta extends JPanel {
     private double SpanTotal;
     private double t0;
     
-    private boolean Girando = false;
-    
-    private Resultable Listener;
+    private Listenable Listener;
     
     public PanelRuleta() {
         setPreferredSize(new Dimension(220, 220));
@@ -66,7 +67,7 @@ public class PanelRuleta extends JPanel {
         Items.add(TipoFicha.MUERTE);
     }
     
-    public void setListener(Resultable listen) {
+    public void setListener(Listenable listen) {
         this.Listener = listen;
     }
     
@@ -88,14 +89,8 @@ public class PanelRuleta extends JPanel {
         repaint();
     }
     
-    public void setIntentosPorPiezasPerdidas(int perdidas) {
-        if (perdidas <= 1) {
-            IntentosRestantes = 1;
-        } else if (perdidas <= 3) {
-            IntentosRestantes = 2;
-        } else {
-            IntentosRestantes = 3;
-        }
+    public void setIntentos(int n) {
+        IntentosRestantes = Math.max(0, n);
     }
     
     public boolean QuedanIntentos() {
@@ -106,38 +101,71 @@ public class PanelRuleta extends JPanel {
         if (IntentosRestantes > 0) {
             IntentosRestantes--;
         }
+        
+        repaint();
     }
     
-    public void GiraryDetener(int ms) {
-        if (Girando || Items.isEmpty()) {
+    public void setIntentosPorPiezasPerdidas(int perdidas) {
+        if (perdidas <= 1) {
+            IntentosRestantes = 1;
+        } else if (perdidas <= 3) {
+            IntentosRestantes = 2;
+        } else {
+            IntentosRestantes = 3;
+        }
+    }
+    
+    public void GirarUnaVez() {
+        if (Girando || !QuedanIntentos() || Items.isEmpty()) {
             return;
         }
         
-        DuracionMs = Math.max(600, ms);
-        
-        int indiceobjetivo = random.nextInt(Items.size());
-        
-        double paso = (Math.PI * 2.0) / Items.size();
-        double seccioncentro = (indiceobjetivo + 0.5) * paso - Math.PI / 2.0; //Puntero arriba
-        
-        int vueltas = 4 + random.nextInt(2);
-        AnguloObjetivo = Normalizar(seccioncentro + vueltas * Math.PI * 2.0);
-        
-        AnguloInicio = Normalizar(AnguloActual);
-        SpanTotal = Normalizar(AnguloObjetivo - AnguloInicio);
-        
-        if (SpanTotal < Math.toRadians(30)) {
-            SpanTotal += 2 * Math.PI;
-        }
-        
-        t0 = (double) Calendar.getInstance().getTimeInMillis();
+        IntentosRestantes--;
         Girando = true;
+        
+        int vueltas = 3 + random.nextInt(3);
+        double extra = random.nextDouble() * 360.0;
+        
+        SpanTotal = vueltas * 360.0 + extra;
+        
+        //preparar easing
+        AnguloInicio = AnguloActual;
+        TInicio = Calendar.getInstance().getTimeInMillis();
         
         if (timer != null && timer.isRunning()) {
             timer.stop();
         }
         
-        timer = new Timer(16, (ActionEvent e) -> AnimacionTick());
+        int periodo = 16;
+        
+        timer = new Timer(periodo, e -> {
+            long ahora = Calendar.getInstance().getTimeInMillis();
+            double t = Math.min(1.0, (ahora - TInicio) / (double) DuracionMs);
+            
+            //ease cubico
+            double ease = 1 - Math.pow(1 - t, 3);
+            AnguloActual = AnguloInicio + SpanTotal * ease;
+            
+            AnguloActual = norm360(AnguloActual);
+            
+            repaint();
+            
+            if (t >= 1.0) {
+                ((Timer) e.getSource()).stop();
+                Girando = false;
+                
+                //Determinar resultado final por el angulo en que termino
+                TipoFicha resultado = CalcularResultadoPorAngulo(AnguloActual);
+                
+                if (Listener != null && resultado != null) {
+                    try {
+                        Listener.onResultado(resultado);
+                    } catch (Throwable ignorar) {
+                        
+                    }
+                }
+            }
+        });
         timer.start();
     }
     
@@ -148,46 +176,6 @@ public class PanelRuleta extends JPanel {
         
         Girando = false;
     }
-    
-    private void AnimacionTick() {
-        double ahora = (double) Calendar.getInstance().getTimeInMillis();
-        double progreso = ValorNormalizado((ahora - t0) / (double) DuracionMs);
-        
-        double ease = 1 - Math.pow(1 - progreso, 3.0);
-        
-        AnguloActual = Normalizar(AnguloActual + SpanTotal * ease); //Aqui aseguro que la ruleta no vaya a ir contra el reloj
-        
-        //Fin cuando se alcanza la duracion o esta practicamente en el objetivo
-        if (progreso >= 1.0) {
-            AnguloActual = AnguloObjetivo;
-            Girando = false;
-            timer.stop();
-            
-            if (Listener != null) {
-                Listener.Seleccionado(Items.get(IndiceDesdeAngulo(AnguloActual)));
-            }
-        }
-        
-        repaint();
-    }
-    
-    private int IndiceDesdeAngulo(double angulo) {
-        double paso = (Math.PI * 2.0) / Items.size();
-        double norm = Normalizar(angulo);
-        
-        double referencia = Normalizar(norm - (-Math.PI / 2.0)); //Puntero arriba
-        int indice = (int) Math.floor(referencia / paso);
-        
-        if (indice < 0) {
-            indice = 0;
-        }
-        if (indice >= Items.size()) {
-            indice = Items.size() - 1;
-        }
-        
-        return indice;
-    }
-    
     
     @Override
     protected void paintComponent(Graphics g) {
@@ -218,7 +206,8 @@ public class PanelRuleta extends JPanel {
         g2d.setStroke(BordeStroke);
         g2d.drawOval(x, y, d, d);
         
-        g2d.rotate(AnguloActual, cx, cy);
+        double angulorad = Math.toRadians(AnguloActual);
+        g2d.rotate(angulorad, cx, cy);
         
         double paso = (Math.PI * 2.0) / Items.size();
         double inicio = -Math.PI / 2.0;
@@ -251,7 +240,7 @@ public class PanelRuleta extends JPanel {
         }
         
         //"Desrotar" para poder dibujar un puntero fijo
-        g2d.rotate(-AnguloActual, cx, cy);
+        g2d.rotate(-angulorad, cx, cy);
         
         //Puntero (arriba)
         int[] puntosX = {cx, cx - 10, cx + 10};
@@ -264,6 +253,12 @@ public class PanelRuleta extends JPanel {
         g2d.fillPolygon(puntosX, puntosY, 3);
     }
     
+    private static double norm360(double a) {
+        double r = a % 360.0;
+        
+        return (r < 0) ? r + 360.0 : r;
+    }
+    
     private static double Normalizar(double angulo) {
         double t = angulo % (Math.PI * 2.0);
         
@@ -274,28 +269,45 @@ public class PanelRuleta extends JPanel {
         return t;
     }
     
-    private static double ValorNormalizado(double v) {
-        if (v < 0) {
-            return 0;
-        }
-        if (v > 1) {
-            return 1;
+    private TipoFicha CalcularResultadoPorAngulo(double angulo) {
+        if (Items.isEmpty()) {
+            return null;
         }
         
-        return v;
-    }
-    
-    private static double DeltaAngular(double a, double b) {
-        double d = (b - a) % (Math.PI * 2.0);
+        //Angulo actual de la ruleta pero en radianes
+        double angulorad = Math.toRadians(angulo);
         
-        if (d > Math.PI) {
-            d -= Math.PI * 2.0;
-        }
-        if (d < -Math.PI) {
-            d += Math.PI * 2.0;
+        double punteroscreen = -Math.PI / 2.0;
+        
+        //Angulo, en el sistema de la rueda antes de rotar
+        double theta = punteroscreen - angulorad;
+        theta = Normalizar(theta);
+        
+        //Sectores
+        double inicio = -Math.PI / 2.0;
+        double inicioN = Normalizar(inicio);
+        
+        int n = Items.size();
+        double paso = (Math.PI * 2.0) / n;
+        
+        //Disrancia regular desde el inicio del sector
+        double rel = theta - inicioN;
+        
+        if (rel < 0) {
+            rel += Math.PI * 2.0;
         }
         
-        return d;
+        //Averiguar en que sector cayo
+        int indice = (int) Math.floor(rel / paso);
+        
+        if (indice < 0) {
+            indice = 0;
+        }
+        if (indice >= n) {
+            indice = n - 1;
+        }
+        
+        return Items.get(indice);
     }
     
     private Image IconoDe(TipoFicha tipo) {
