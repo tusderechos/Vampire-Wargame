@@ -270,8 +270,8 @@ public class PanelJuego extends JFrame {
         EstilizarBoton(BtnSalir);
         BtnSalir.addActionListener(e -> onSalir());
         
-        BtnRuleta = new JButton("");
-        
+        BtnRuleta = new JButton("GIRAR");
+        EstilizarBoton(BtnRuleta);
         BtnRuleta.addActionListener(e -> {
             panelRuleta.GirarUnaVez();
             
