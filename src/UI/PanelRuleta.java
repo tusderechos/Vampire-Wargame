@@ -48,8 +48,11 @@ public class PanelRuleta extends JPanel {
     private long DuracionMs = 1500;
     private long TInicio;
     private double AnguloActual = 0;
+    private double velocidad = 0;
     private double AnguloInicio;
     private double SpanTotal;
+    
+    private TipoFicha ResultadoActual;
     
     private Listenable Listener;
     
@@ -64,6 +67,28 @@ public class PanelRuleta extends JPanel {
         Items.add(TipoFicha.HOMBRE_LOBO);
         Items.add(TipoFicha.VAMPIRO);
         Items.add(TipoFicha.MUERTE);
+        
+        timer = new Timer(16, e -> {
+            AnguloActual += velocidad;
+            
+            if (AnguloActual >= 360) {
+                AnguloActual -= 360;
+            }
+            
+            repaint();
+        });
+    }
+    
+    public void IniciarRuleta() {
+        if (Girando) {
+            return;
+        }
+        
+        Girando = true;
+        ResultadoActual = null;
+        velocidad = 15 + new Random().nextInt(10);
+        
+        timer.start();
     }
     
     public void setListener(Listenable listen) {
@@ -177,7 +202,11 @@ public class PanelRuleta extends JPanel {
         
         timer = new Timer(16, e -> {
             long ahora = Calendar.getInstance().getTimeInMillis();
-            double t = Math.min(1.0, ahora - TInicio) / (double) DuracionMs;
+            long transcurrido = ahora - TInicio;
+            double t = transcurrido / (double) DuracionMs;
+            if (t > 1.0) {
+                t = 1.0;
+            }
             
             //easing
             double ease = 1 - Math.pow(1 - t, 3);
@@ -193,6 +222,7 @@ public class PanelRuleta extends JPanel {
                 RestarIntentos();
                 
                 TipoFicha resultado = CalcularResultadoPorAngulo(AnguloActual);
+                ResultadoActual = resultado;
                 
                 if (Listener != null && resultado != null) {
                     try {
@@ -210,6 +240,56 @@ public class PanelRuleta extends JPanel {
         if (Girando && !FaseFrenado) {
             IniciarFrenado();
         }
+    }
+    
+    public void DetenerRuleta() {
+        if (Girando && !FaseFrenado) {
+            IniciarFrenado();
+            return;
+        }
+        
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        
+        Girando = false;
+        FaseFrenado = false;
+        
+        TipoFicha resultado = CalcularResultadoPorAngulo(AnguloActual);
+        ResultadoActual = resultado;
+        
+        if (Listener != null && resultado != null) {
+            try {
+                Listener.onResultado(resultado);
+            } catch (Throwable ignorar) {
+            }
+        }
+                
+    }
+    
+    private void CalcularResultado() {
+        if (Items.isEmpty()) {
+            ResultadoActual = null;
+            return;
+        }
+        
+        double angulonorm = (AnguloActual % 360 + 360) % 360;
+        
+        double tamsector = 360.0 / Items.size();
+        int indice = (int)(angulonorm / tamsector);
+        
+        if (indice < 0) {
+            indice = 0;
+        }
+        if (indice >= Items.size()) {
+            indice = Items.size() - 1;
+        }
+        
+        ResultadoActual = Items.get(indice);
+    }
+    
+    public TipoFicha getResultadoActual() {
+        return ResultadoActual;
     }
     
     @Override

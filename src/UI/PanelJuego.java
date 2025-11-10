@@ -40,7 +40,8 @@ public class PanelJuego extends JFrame {
     private JLabel LblJugadores;
     
     private JButton BtnSalir;
-    private JButton BtnRuleta;
+    private JButton BtnGirar;
+    private JButton BtnParar;
     
     private JPanel Raiz;
     private JPanel WrapperCentral;
@@ -270,22 +271,18 @@ public class PanelJuego extends JFrame {
         EstilizarBoton(BtnSalir);
         BtnSalir.addActionListener(e -> onSalir());
         
-        BtnRuleta = new JButton("DETENER");
-        EstilizarBoton(BtnRuleta);
+        BtnGirar = new JButton("GIRAR");
+        EstilizarBoton(BtnGirar);
+        BtnGirar.addActionListener(e -> panelRuleta.GirarUnaVez());
         
-        BtnRuleta.addActionListener(e -> {
-            panelRuleta.GirarUnaVez();
-            
-            if (panelRuleta.isGirando()) {
-                BtnRuleta.setText("DETENER");
-            } else {
-                BtnRuleta.setText("GIRAR");
-            }
-        });
+        BtnParar = new JButton("DETENER");
+        EstilizarBoton(BtnParar);
+        BtnGirar.addActionListener(e -> panelRuleta.Detener());
                 
         Lateral.add(Box.createVerticalStrut(8));
         Lateral.add(BtnSalir);
-        Lateral.add(BtnRuleta);
+        Lateral.add(BtnGirar);
+        Lateral.add(BtnParar);
         Lateral.add(Box.createVerticalGlue());
         
         
