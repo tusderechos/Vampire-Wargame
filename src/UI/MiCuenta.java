@@ -13,7 +13,8 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MiCuenta extends JFrame {
     
@@ -62,85 +63,92 @@ public class MiCuenta extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         
-        LblTitulo = new JLabel("MI CUENTA", SwingConstants.CENTER);
-        LblTitulo.setFont(new Font("Arial", Font.BOLD, 26));
-        LblTitulo.setForeground(Color.WHITE);
+        LblTitulo = new JLabel("MI CUENTA");
+        EstilizarTitulo(LblTitulo);
         
-        LblSubtitulo = new JLabel("Encuentra informacion sobre tu cuenta", SwingConstants.CENTER);
-        LblSubtitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        LblSubtitulo.setForeground(Color.WHITE);
+        LblSubtitulo = new JLabel("Encuentra informacion sobre tu cuenta");
+        EstilizarLabel(LblSubtitulo);
         
         JPanel PanelHeader = new JPanel();
         PanelHeader.setLayout(new BoxLayout(PanelHeader, BoxLayout.Y_AXIS));
         PanelHeader.setOpaque(false);
         
+        PanelHeader.add(Box.createVerticalStrut(10));
         PanelHeader.add(LblTitulo);
+        PanelHeader.add(Box.createVerticalStrut(5));
         PanelHeader.add(LblSubtitulo);
+        PanelHeader.add(Box.createVerticalStrut(10));
         
         
         BtnCambiarPass = new JButton("Cambiar Contraseña");
-        BtnCambiarPass.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnCambiarPass.addActionListener(e -> AbrirCambiarPass());
 
         BtnCerrarCuenta = new JButton("Cerrar Cuenta");
-        BtnCerrarCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnCerrarCuenta.addActionListener(e -> onCerrarCuenta());
 
         BtnSalir = new JButton("Salir");
-        BtnSalir.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnSalir.addActionListener(e -> onSalir());
+        
+        EstilizarBoton(BtnCambiarPass);
+        EstilizarBoton(BtnCerrarCuenta);
+        EstilizarBoton(BtnSalir);
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.Y_AXIS));
         PanelBotones.setOpaque(false);
+        PanelBotones.setBorder(BorderFactory.createEmptyBorder(30, 0, 25, 0));
         
         PanelBotones.add(BtnCambiarPass);
+        PanelBotones.add(Box.createVerticalStrut(10));
         PanelBotones.add(BtnCerrarCuenta);
+        PanelBotones.add(Box.createVerticalStrut(10));
         PanelBotones.add(BtnSalir);
+        
+        JPanel PanelInfoWrapper = new JPanel();
+        PanelInfoWrapper.setOpaque(false);
+        PanelInfoWrapper.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 40));
         
         JPanel PanelInfo = new JPanel();
         PanelInfo.setLayout(new BoxLayout(PanelInfo, BoxLayout.Y_AXIS));
-        PanelInfo.setOpaque(false);
+        PanelInfo.setBorder(BorderFactory.createEmptyBorder(20, 60, 20, 60));
+        PanelInfo.setBackground(new Color(0, 0, 0, 130));
+        PanelInfo.setOpaque(true);
         
-        int indice = Memoria.indexOf(UsuarioActivo);
+        int indice = Memoria.getIndiceUsuario(UsuarioActivo);
+        String puntos = String.valueOf(Memoria.getPuntos(indice));
+        String fecha = Memoria.getFechaIngresoFormat(indice, "dd/MM/yyyy HH:mm");
+        String estado = Memoria.isActivo(indice) ? "ACTIVO" : "INACTIVO";
         
-        LblUsuario = new JLabel("Nombre de Usuario:" + UsuarioActivo);
-        LblUsuario.setForeground(Color.WHITE);
-        LblUsuario.setFont(new Font("Arial", Font.BOLD, 24));
+        LblUsuario = new JLabel("Nombre de Usuario: " + UsuarioActivo);
+        EstilizarLabel(LblUsuario);
+        LblUsuario.setFont(new Font("Bookman Old Style", Font.BOLD, 24));
         
-        LblPuntos = new JLabel("Puntaje: " + Memoria.getPuntos(indice));
-        LblPuntos.setForeground(Color.WHITE);
-        LblPuntos.setFont(new Font("Arial", Font.BOLD, 24));
+        LblPuntos = new JLabel("Puntaje: " + puntos);
+        EstilizarLabel(LblPuntos);
+        LblPuntos.setFont(new Font("Bookman Old Style", Font.BOLD, 24));
         
-        LblFechaIngreso = new JLabel("Fecha de ingreso: " + Memoria.getFechaIngresoFormat(indice, ""));
-        LblFechaIngreso.setForeground(Color.WHITE);
-        LblFechaIngreso.setFont(new Font("Arial", Font.BOLD, 24));
+        LblFechaIngreso = new JLabel("Fecha de ingreso: " + fecha);
+        EstilizarLabel(LblFechaIngreso);
+        LblFechaIngreso.setFont(new Font("Bookman Old Style", Font.BOLD, 24));
         
-        LblActivo = new JLabel("Estado: " + Memoria.isActivo(indice));
-        LblActivo.setForeground(Color.WHITE);
-        LblActivo.setFont(new Font("Arial", Font.BOLD, 24));
-        
-        Component glue2 = Box.createGlue(); 
-        Component glue3 = Box.createGlue(); 
-        Component glue4 = Box.createGlue(); 
-        Component glue5 = Box.createGlue(); 
-        Component glue6 = Box.createGlue(); 
-        
-        PanelInfo.add(glue2);
+        LblActivo = new JLabel("Estado: " + estado);
+        EstilizarLabel(LblActivo);
+        LblActivo.setFont(new Font("Bookman Old Style", Font.BOLD, 24));
+
+        PanelInfo.add(Box.createVerticalStrut(15));
         PanelInfo.add(LblUsuario);
-        PanelInfo.add(glue3);
+        PanelInfo.add(Box.createVerticalStrut(10));
         PanelInfo.add(LblPuntos);
-        PanelInfo.add(glue4);
+        PanelInfo.add(Box.createVerticalStrut(10));
         PanelInfo.add(LblFechaIngreso);
-        PanelInfo.add(glue5);
+        PanelInfo.add(Box.createVerticalStrut(10));
         PanelInfo.add(LblActivo);
-        PanelInfo.add(glue6);
         
-        CargarDatosUsuario();
-        
+        PanelInfoWrapper.add(PanelInfo);
+                 
         PanelFondo.setLayout(new BorderLayout());
         PanelFondo.add(PanelHeader, BorderLayout.NORTH);
-        PanelFondo.add(PanelInfo, BorderLayout.CENTER);
+        PanelFondo.add(PanelInfoWrapper, BorderLayout.CENTER);
         PanelFondo.add(PanelBotones, BorderLayout.SOUTH);
         PanelFondo.repaint();
     }
@@ -189,37 +197,62 @@ public class MiCuenta extends JFrame {
         }
     }
     
-    public void CargarDatosUsuario() {
-        UsuarioActivo = menuPrincipal.getUsuarioActivo();
-        
-        if (UsuarioActivo == null) {
-            JOptionPane.showMessageDialog(this, "El usuario esta vacio", "Error", JOptionPane.ERROR_MESSAGE);
-            this.setVisible(false);
-            menuPrincipal.setVisible(true);
-            return;
-        }
-        
-        int indice = getIndiceUsuarioActual();
-        
-        if (indice == -1) {
-            JOptionPane.showMessageDialog(this, "El indice del usuario es -1", "Error", JOptionPane.ERROR_MESSAGE);
-            this.setVisible(false);
-            menuPrincipal.setVisible(true);
-            return;
-        }
-        
-        LblUsuario.setText("Usuario: " + UsuarioActivo);
-        LblPuntos.setText("Puntos: " + Memoria.getPuntos(indice));
-        LblFechaIngreso.setText("Fecha de Ingreso: " + Memoria.getFechaIngresoFormat(indice, "dd/MM/yyyy HH:mm"));
-        LblActivo.setText(Memoria.isActivo(indice) ? "Estado: ACTIVO" : "Estado: INACTIVO");
-        
-    }
-    
     public String getUsuarioActual() {
         return menuPrincipal.getUsuarioActivo();
     }
     
     public int getIndiceUsuarioActual() {
-        return Memoria.indexOf(getUsuarioActual());
+        return Memoria.getIndiceUsuario(getUsuarioActual());
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        boton.setFont(new Font("Bookman Old Style", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
+        
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarTitulo(JLabel titulo) {
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        Font base = new Font("Old English Text MT", Font.BOLD, 38);
+        titulo.setFont(base);
+        
+        titulo.setForeground(new Color(230, 200, 120));
+        titulo.setOpaque(true);
+        titulo.setBackground(new Color(0, 0, 0, 170)); //Franja oscura
+        titulo.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+    }
+    
+    private void EstilizarLabel(JLabel label) {
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(new Font("Old English Text MT", Font.BOLD, 22));
+        label.setForeground(new Color(230, 230, 150));
+        label.setBackground(new Color(0, 0, 0, 150));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6), BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 30, 0))));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }

@@ -16,7 +16,7 @@ import Fichas.*;
 import Ruleta.TipoFicha;
 import Interfaces.Capturable;
 
-public class Tablero {
+public final class Tablero {
     
     private int Filas;
     private int Cols;
@@ -51,10 +51,10 @@ public class Tablero {
         }
     }
     
-    public int getFilas() {
+    public final int getFilas() {
         return Filas;
     }
-    public int getColumnas() {
+    public final int getColumnas() {
         return Cols;
     }
     
@@ -157,9 +157,7 @@ public class Tablero {
         
         Ficha capturada = casilla.getOcupante();
         casilla.LiberarCasilla();
-        
-        System.out.println("QuitarFicha: " + capturada);
-        
+                
         NotificarCaptura(capturada);
     }
     
@@ -327,6 +325,30 @@ public class Tablero {
         nuevo.setPos(destino);
         
         return true;
+    }
+    
+    public int ContarPiezas(int fila, int col, Bando bando) {
+        if (fila >= getFilas()) {
+            return 0;
+        }
+        
+        int siguientefila = fila;
+        int siguientecol = col + 1;
+        
+        if (siguientecol >= getColumnas()) {
+            siguientecol = 0;
+            siguientefila++;
+        }
+        
+        int suma = ContarPiezas(siguientefila, siguientecol, bando);
+        
+        Casilla casilla = get(new Posicion(fila, col));
+        
+        if (casilla != null && !casilla.CasillaLibre() && casilla.getOcupante().getColor() == bando) {
+            suma++;
+        }
+        
+        return suma;
     }
     
     private boolean esAdyacente8(Posicion a, Posicion b) {

@@ -41,6 +41,10 @@ public class TableroVisual extends JPanel {
     private Clickable clickable;
     private Providable providable;
     
+    private int IntentosBlancas;
+    private int IntentosNegras;
+    private boolean TurnoBlancas = false;
+    
     public TableroVisual(Tablero tablero) {
         this.tablero = tablero;
         setOpaque(true);
@@ -241,26 +245,30 @@ public class TableroVisual extends JPanel {
         
         //Resalar fichas del mismo tipo
         if (DestinosAuxiliares != null && !DestinosAuxiliares.isEmpty()) {
-            g2d.setColor(new Color(255, 255, 0, 80)); //Amarillo transparente
+            g2d.setColor(new Color(255, 255, 0, 80)); //Amarillo suave
             
             for (Posicion p : DestinosAuxiliares) {
+                if (p == null || !tablero.Dentro(p)) {
+                    continue;
+                }
+                
                 int x = p.Col * TamanoCelda;
                 int y = p.Fila * TamanoCelda;
                 
-                g2d.fillRect(x, y, TamanoCelda, TamanoCelda);
+                g2d.fillRect(x, y, 10, 10);
             }
         }
         
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
-        final Color COLOR_MOV = new Color(255, 215, 0, 110); //Verde
-        final Color COLOR_ATK = new Color(220, 60, 60, 140); //Rojo
-        final Color COLOR_INV = new Color(60, 180, 120, 120); //Celeste
+        final Color COLOR_MOV = new Color(0, 200, 0, 120); //Verde
+        final Color COLOR_ATK = new Color(220, 0, 0, 150); //Rojo
+        final Color COLOR_INV = new Color(60, 160, 250, 150); //Azul
         final Color COLOR_SEL = new Color(255, 220, 100); //Borde Seleccion
         
         //Highlight de movimientos
-        if (DestinosMovimiento != null) {
+        if (DestinosMovimiento != null && !DestinosMovimiento.isEmpty()) {
             g2.setColor(COLOR_MOV);
             for (Posicion d : DestinosMovimiento) {
                 if (d != null && tablero.Dentro(d)) {
@@ -270,7 +278,7 @@ public class TableroVisual extends JPanel {
         }
         
         //Highlight de ataques normales/especiales
-        if (DestinosAtaque != null) {
+        if (DestinosAtaque != null && !DestinosAtaque.isEmpty()) {
             g2.setColor(COLOR_ATK);
             for (Posicion d : DestinosAtaque) {
                 if (d != null && tablero.Dentro(d)) {
@@ -280,7 +288,7 @@ public class TableroVisual extends JPanel {
         }
         
         //Highlight de la invocacion de la muerte
-        if (DestinosInvocar != null) {
+        if (DestinosInvocar != null && !DestinosInvocar.isEmpty()) {
             g2.setColor(COLOR_INV);
             for (Posicion d : DestinosInvocar) {
                 if (d != null && tablero.Dentro(d)) {
@@ -293,10 +301,10 @@ public class TableroVisual extends JPanel {
         if (SeleccionActual != null && tablero.Dentro(SeleccionActual)) {
             int rx = SeleccionActual.Col * TamanoCelda;
             int ry = SeleccionActual.Fila * TamanoCelda;
-            
+                                    
             g2.setColor(COLOR_SEL);
-            g2.setStroke(new BasicStroke(3f));
-            g2.drawRect(rx + 1, ry + 1, TamanoCelda - 2, TamanoCelda - 2);
+            g2.setStroke(new BasicStroke(4f));
+            g2.drawRect(rx + 1, ry + 1, TamanoCelda - 3, TamanoCelda - 3);
         }
         
         //Grid

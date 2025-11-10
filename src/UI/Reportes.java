@@ -15,11 +15,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
 public class Reportes extends JFrame {
@@ -30,13 +31,9 @@ public class Reportes extends JFrame {
     private JScrollPane ScrollRanking;
     private JScrollPane ScrollLogs;
     
-    private JButton BtnRanking;
-    private JButton BtnLogs;
     private JButton BtnRefrescar;
     private JButton BtnSalir;
-    
-    private JCheckBox CBIncluirInactivos;
-    
+        
     private MenuPrincipal menuPrincipal;
     private CuentasMem Memoria;
     private String UsuarioActivo;
@@ -66,9 +63,9 @@ public class Reportes extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         
         LblTitulo = new JLabel("REPORTES", SwingConstants.CENTER);
-        LblTitulo.setFont(new Font("Times New Roman", Font.BOLD, 30));
-        LblTitulo.setForeground(Color.WHITE);
+        EstilizarTitulo(LblTitulo);
         
+        //Panel para las dos tablas
         JPanel PanelTablas = new JPanel();
         PanelTablas.setLayout(new GridLayout(2, 1, 10, 10));
         PanelTablas.setOpaque(false);
@@ -96,16 +93,15 @@ public class Reportes extends JFrame {
             }
         };
         
-        Color fondosemi = new Color(0, 0, 0, 90);
+        Color fondosemi = new Color(10, 10, 10);
         Color grid = new Color(80, 80, 80);
-        Color headerbg = new Color(0, 0, 0, 150);
+        Color headerbg = new Color(30, 20, 20);
+        Color dorado = new Color(230, 220, 150);
         
         TblRanking = new JTable(ModeloRanking);
         TblLogs = new JTable(ModeloLogs);
         
         for (JTable tabla : new JTable[]{TblRanking, TblLogs}) {
-            tabla.setOpaque(false);
-            ((DefaultTableCellRenderer) tabla.getDefaultRenderer(Object.class)).setOpaque(false);
             tabla.setRowHeight(26);
             tabla.setShowHorizontalLines(true);
             tabla.setShowVerticalLines(false);
@@ -113,112 +109,84 @@ public class Reportes extends JFrame {
             tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             tabla.setFillsViewportHeight(true);
             tabla.setSelectionForeground(Color.WHITE);
-            tabla.setSelectionBackground(headerbg);
+            tabla.setSelectionBackground(new Color(0, 0, 0, 0));
+            tabla.setOpaque(false);
         }
         
+        //Header compartdo
+        DefaultTableCellRenderer RendererHeader = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setFont(new Font("Bookman Old Style", Font.BOLD, 15));
+                lbl.setForeground(dorado);
+                lbl.setBackground(headerbg);
+                lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200, 120)));
+                lbl.setOpaque(true);
+                
+                return lbl;
+            }
+        };
+                
         JTableHeader hdrR = TblRanking.getTableHeader();
         hdrR.setReorderingAllowed(false);
-        hdrR.setFont(new Font("Arial", Font.BOLD, 13));
-        hdrR.setForeground(Color.WHITE);
-        hdrR.setBackground(headerbg);
-        ((DefaultTableCellRenderer)hdrR.getDefaultRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+        hdrR.setResizingAllowed(false);
+        hdrR.setDefaultRenderer(RendererHeader);
         
         JTableHeader hdrL = TblLogs.getTableHeader();
         hdrL.setReorderingAllowed(false);
-        hdrL.setFont(new Font("Arial", Font.BOLD, 13));
-        hdrL.setForeground(Color.WHITE);
-        hdrL.setBackground(headerbg);
-        ((DefaultTableCellRenderer)hdrL.getDefaultRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+        hdrL.setResizingAllowed(false);
+        hdrL.setDefaultRenderer(RendererHeader);
+        
+        //Renderer base
+        DefaultTableCellRenderer RendererBase = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                lbl.setForeground(Color.WHITE);
+                lbl.setFont(lbl.getFont().deriveFont(isSelected ? Font.BOLD : Font.PLAIN));
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setBackground(isSelected ? new Color(80, 40, 40) : new Color(20, 20, 20));
+                lbl.setOpaque(true);
+                
+                return lbl;
+            }
+        };
+        
+        //renderer dorado para Usuario y para toda la tabla de logs
+        DefaultTableCellRenderer RendererDorado = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel lbl = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                lbl.setForeground(dorado);
+                lbl.setFont(lbl.getFont().deriveFont(isSelected ? Font.BOLD : Font.PLAIN));
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+                lbl.setBackground(isSelected ? new Color(80, 40, 40) : new Color(20, 20, 20));
+                lbl.setOpaque(true);
+                
+                return lbl;
+            }
+        };
         
         
         //Alineacion de columnas
-        DefaultTableCellRenderer centro = new DefaultTableCellRenderer();
-        centro.setHorizontalAlignment(SwingConstants.CENTER);
-        
         TableColumnModel tcmR = TblRanking.getColumnModel();
-        tcmR.getColumn(0).setCellRenderer(centro);
-        tcmR.getColumn(2).setCellRenderer(centro);
-        
-        DefaultTableCellRenderer RendererBlanco = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable tabla, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(tabla, value, isSelected, hasFocus, row, column);
-                c.setForeground(Color.WHITE);
-                
-                if (isSelected) {
-                    c.setFont(c.getFont().deriveFont(Font.BOLD));
-                } else {
-                    c.setFont(c.getFont().deriveFont(Font.PLAIN));
-                }
-                
-                return c;
-            }
-        };
         for (int i = 0; i < tcmR.getColumnCount(); i++) {
-            tcmR.getColumn(i).setCellRenderer(RendererBlanco);
+            tcmR.getColumn(i).setCellRenderer(RendererBase);
         }
         
-        TblRanking.setSelectionBackground(new Color(0, 0, 0, 0));
-        TblRanking.setSelectionForeground(Color.WHITE);
-        TblLogs.setSelectionBackground(new Color(0, 0, 0, 0));
-        TblLogs.setSelectionForeground(Color.WHITE);
-        
-        DefaultTableCellRenderer RendererBase = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable tabla, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(tabla, value, isSelected, hasFocus, row, column);
-                setOpaque(false);
-                c.setForeground(Color.WHITE);
-                c.setFont(c.getFont().deriveFont(isSelected ? Font.BOLD : Font.PLAIN));
-                
-                return c;
-            }
-        };
-        
-        DefaultTableCellRenderer RendererUsuario = new DefaultTableCellRenderer() {
-            private final Color Dorado = new Color(230, 220, 150);
-            
-            @Override
-            public Component getTableCellRendererComponent(JTable tabla, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(tabla, value, isSelected, hasFocus, row, column);
-                setOpaque(false);
-                c.setForeground(Dorado);
-                c.setFont(c.getFont().deriveFont(isSelected ? Font.BOLD : Font.PLAIN));
-                
-                return c;
-            }
-        };
-        //Asignar el renderer a la columna de usuario
-        for (int i = 0; i < TblRanking.getColumnCount(); i++) {
-            TblRanking.getColumnModel().getColumn(i).setCellRenderer(RendererBase);
-        }
-        TblRanking.getColumnModel().getColumn(1).setCellRenderer(RendererUsuario);
-        
-        for (int i = 0; i < TblLogs.getColumnCount(); i++) {
-            TblLogs.getColumnModel().getColumn(i).setCellRenderer(RendererBase);
-        }
+        //Colocar usuario en dorado
+        tcmR.getColumn(1).setCellRenderer(RendererDorado);
         
         TableColumnModel tcmL = TblLogs.getColumnModel();
-        DefaultTableCellRenderer RendererLogs = new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable tabla, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component c = super.getTableCellRendererComponent(tabla, value, isSelected, hasFocus, row, column);
-                c.setForeground(new Color(230, 220, 150));
-                
-                if (isSelected) {
-                    c.setFont(c.getFont().deriveFont(Font.BOLD));
-                } else {
-                    c.setFont(c.getFont().deriveFont(Font.PLAIN));
-                }
-                
-                return c;
-            }
-        };
         for (int i = 0; i < tcmL.getColumnCount(); i++) {
-            tcmL.getColumn(i).setCellRenderer(RendererLogs);
+            tcmL.getColumn(i).setCellRenderer(RendererDorado);
         }
         
-        //Anchos
         TblRanking.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         tcmR.getColumn(0).setPreferredWidth(90);
         tcmR.getColumn(1).setPreferredWidth(360);
@@ -226,63 +194,57 @@ public class Reportes extends JFrame {
         
         TblLogs.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         tcmL.getColumn(0).setPreferredWidth(180);
-        tcmL.getColumn(1).setPreferredWidth(320);
-        tcmL.getColumn(2).setPreferredWidth(180);
-        
+        tcmL.getColumn(1).setPreferredWidth(180);
+        tcmL.getColumn(2).setPreferredWidth(320);
         
         ScrollRanking = new JScrollPane(TblRanking);
         ScrollRanking.setOpaque(false);
         ScrollRanking.getViewport().setOpaque(false);
-        ScrollRanking.getViewport().setBackground(fondosemi);
+        
+        JPanel CajaRanking = new JPanel(new BorderLayout());
+        CajaRanking.setBackground(fondosemi);
+        CajaRanking.setOpaque(true);
+        CajaRanking.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        CajaRanking.add(ScrollRanking, BorderLayout.CENTER);
+        
         AjustarAnchosProporcional(TblRanking, 15, 55, 30);
         HookResizeProporcional(ScrollRanking, () -> AjustarAnchosProporcional(TblRanking, 15, 55, 30));
         
         ScrollLogs = new JScrollPane(TblLogs);
         ScrollLogs.setOpaque(false);
         ScrollLogs.getViewport().setOpaque(false);
-        ScrollLogs.getViewport().setBackground(fondosemi);
-        AjustarAnchosProporcional(TblLogs, 25, 25, 50);
-        HookResizeProporcional(ScrollLogs, () -> AjustarAnchosProporcional(TblLogs, 20, 30, 50));
         
-        PanelTablas.add(ScrollRanking);
-        PanelTablas.add(ScrollLogs);
+        JPanel CajaLogs = new JPanel(new BorderLayout());
+        CajaLogs.setBackground(fondosemi);
+        CajaLogs.setOpaque(true);
+        CajaLogs.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        CajaLogs.add(ScrollLogs, BorderLayout.CENTER);
+        
+        PanelTablas.add(CajaRanking);
+        PanelTablas.add(CajaLogs);
+        
+        AjustarAnchosProporcional(TblLogs, 20, 30, 50);
+        HookResizeProporcional(ScrollLogs, () -> AjustarAnchosProporcional(TblLogs, 20, 30, 50));
         
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.X_AXIS));
         PanelBotones.setOpaque(false);
         
-        BtnRanking = new JButton("RANKING");
-        BtnRanking.setFont(new Font("Arial", Font.BOLD, 14));
-        BtnRanking.addActionListener(e -> MostrarRanking());
-        
-        CBIncluirInactivos = new JCheckBox("Incluir Inactivos");
-        CBIncluirInactivos.setOpaque(false);
-        CBIncluirInactivos.setForeground(Color.WHITE);
-        CBIncluirInactivos.setFont(new Font("Arial", Font.PLAIN, 13));
-        
-        BtnLogs = new JButton("LOGS");
-        BtnLogs.setFont(new Font("Arial", Font.BOLD, 14));
-        BtnLogs.addActionListener(e -> MostrarLogs());
-        
         BtnRefrescar = new JButton("REFRESCAR");
-        BtnRefrescar.setFont(new Font("Arial", Font.BOLD, 14));
-        BtnRefrescar.addActionListener(e -> MostrarRanking());
+        EstilizarBoton(BtnRefrescar);
+        BtnRefrescar.addActionListener(e -> {
+            MostrarRanking();
+            MostrarLogs();
+        });
         
         BtnSalir = new JButton("SALIR");
-        BtnSalir.setFont(new Font("Arial", Font.BOLD, 14));
-//        BtnSalir.setAlignmentX(Component.CENTER_ALIGNMENT);
+        EstilizarBoton(BtnSalir);
         BtnSalir.addActionListener(e -> onSalir());
         
         PanelBotones.add(Box.createHorizontalGlue());
-        PanelBotones.add(BtnRanking);
-        PanelBotones.add(Box.createHorizontalStrut(10));
-        PanelBotones.add(CBIncluirInactivos);
-        PanelBotones.add(Box.createHorizontalStrut(20));
-        PanelBotones.add(BtnLogs);
-        PanelBotones.add(Box.createHorizontalStrut(20));
         PanelBotones.add(BtnRefrescar);
-        PanelBotones.add(Box.createHorizontalStrut(20));
+        PanelBotones.add(Box.createHorizontalStrut(40));
         PanelBotones.add(BtnSalir);
         PanelBotones.add(Box.createHorizontalGlue());
         
@@ -302,12 +264,11 @@ public class Reportes extends JFrame {
         modelo.setRowCount(0);
         
         int total = Memoria.getRegistrados();
-        boolean incluirinactivos = CBIncluirInactivos.isSelected();
         
         ArrayList<Object[]> ListaRanking = new ArrayList<>();
         
         for (int i = 0; i < total; i++) {
-            if (incluirinactivos || Memoria.isActivo(i)) {
+            if (Memoria.isActivo(i)) {
                 String usuario = Memoria.getUsuario(i);
                 
                 if (usuario != null) {
@@ -331,7 +292,7 @@ public class Reportes extends JFrame {
             int ba = (Integer) a[1];
             
             return Integer.compare(pb, ba);
-        }); //Al barro que se me olvido que ando haciendo aqui pero tiene downcasting indirecto (creo, no se si cuenta con enteros o cosas asi)
+        }); //Al barro que se me olvido que ando haciendo aqui pero tiene downcasting indirecto (creo, no se si cuenta con Integers o cosas asi)
         
         int posicion = 1;
         
@@ -363,21 +324,16 @@ public class Reportes extends JFrame {
         
         for(String[] log : logs) {
             if (log != null && log.length >= 3) {
-                String fecha = log[0];
                 modelo.addRow(new Object[]{log[0], log[1], log[2]});
             }
         }
         
-        AjustarAnchosProporcional(TblLogs, 35, 45, 20);
+        AjustarAnchosProporcional(TblLogs, 20, 30, 50);
     }
     
-    private void onSalir() {
-        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir al menu principal?", "Confirmacion", JOptionPane.YES_NO_OPTION);
-        
-        if (opcion == JOptionPane.YES_OPTION) {
-            this.setVisible(false);
-            menuPrincipal.setVisible(true);
-        }
+    private void onSalir() {        
+        this.setVisible(false);
+        menuPrincipal.setVisible(true);
     }
     
     private void AjustarAnchosProporcional(JTable tabla, int... porcentajes) {
@@ -432,6 +388,45 @@ public class Reportes extends JFrame {
                 break;
             }
         }
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setFont(new Font("Bookman Old Style", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
+        
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarTitulo(JLabel titulo) {
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        Font base = new Font("Old English Text MT", Font.BOLD, 38);
+        titulo.setFont(base);
+        
+        titulo.setForeground(new Color(230, 200, 120));
+        titulo.setOpaque(true);
+        titulo.setBackground(new Color(0, 0, 0, 170)); //Franja oscura
+        titulo.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }
 

@@ -13,6 +13,10 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.border.Border;
+import javax.swing.text.JTextComponent;
 
 public class CrearCuenta extends JDialog {
     
@@ -54,9 +58,11 @@ public class CrearCuenta extends JDialog {
         LblTitulo = new JLabel("CREAR CUENTA", SwingConstants.CENTER);
         LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         LblTitulo.setForeground(Color.WHITE);
+        EstilizarTitulo(LblTitulo);
         
         JPanel PanelInfo = new JPanel();
         PanelInfo.setLayout(new BoxLayout(PanelInfo, BoxLayout.Y_AXIS));
+        PanelInfo.setBorder(BorderFactory.createEmptyBorder(5, 15, 0, 0));
         PanelInfo.setOpaque(false);
         
         LblUsuario = new JLabel("Usuario");
@@ -74,6 +80,14 @@ public class CrearCuenta extends JDialog {
         PassConfirmarContra = new JPasswordField("");
         PassConfirmarContra.setMaximumSize(new Dimension(250, 45));
         
+        EstilizarLabel(LblUsuario);
+        EstilizarLabel(LblContra);
+        EstilizarLabel(LblConfirmarContra);
+        
+        EstilizarCampoTexto(TxtUsuario);
+        EstilizarCampoTexto(PassContrasena);
+        EstilizarCampoTexto(PassConfirmarContra);
+        
         PanelInfo.add(LblUsuario);
         PanelInfo.add(TxtUsuario);
         PanelInfo.add(LblContra);
@@ -84,6 +98,7 @@ public class CrearCuenta extends JDialog {
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.X_AXIS));
+        PanelBotones.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
         PanelBotones.setOpaque(false);
         
         BtnCrear = new JButton("CREAR CUENTA");
@@ -92,11 +107,16 @@ public class CrearCuenta extends JDialog {
         BtnCancelar = new JButton("CANCELAR");
         BtnCancelar.addActionListener(e -> onSalir());
         
-        Component glue = Box.createHorizontalGlue();
+        EstilizarBoton(BtnCrear);
+        EstilizarBoton(BtnCancelar);
         
+        PanelBotones.add(Box.createHorizontalStrut(40));
+        PanelBotones.add(Box.createHorizontalGlue());
         PanelBotones.add(BtnCrear);
-        PanelBotones.add(glue);
+        PanelBotones.add(Box.createHorizontalStrut(60));
         PanelBotones.add(BtnCancelar);
+        PanelBotones.add(Box.createHorizontalGlue());
+        PanelBotones.add(Box.createHorizontalStrut(40));
         
         
         PanelFondo.setLayout(new BorderLayout());
@@ -193,11 +213,68 @@ public class CrearCuenta extends JDialog {
         }
     }
     
-    private void onSalir() {
-        int opcion = JOptionPane.showConfirmDialog(this, "Estas seguro que quieres salir de la creacion de cuenta?", "Confirmacion", JOptionPane.YES_NO_OPTION);
+    private void onSalir() {        
+        dispose();
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
         
-        if (opcion == JOptionPane.YES_OPTION) {
-            dispose();
-        }
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarCampoTexto(JTextComponent campo) {
+        campo.setOpaque(true);
+        campo.setForeground(Color.BLACK);
+        campo.setCaretColor(new Color(255, 230, 200));
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        //Borde solo abajo, como tipo "underline"
+        Border underline = BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(220, 180, 0));
+        
+        //Padding interno
+        Border padding = BorderFactory.createEmptyBorder(4, 6, 4, 6);
+        
+        campo.setBorder(BorderFactory.createCompoundBorder(underline, padding));
+    }
+    
+    private void EstilizarTitulo(JLabel titulo) {
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        Font base = new Font("Old English Text MT", Font.BOLD, 38);
+        titulo.setFont(base);
+        
+        titulo.setForeground(new Color(230, 200, 120));
+        titulo.setOpaque(true);
+        titulo.setBackground(new Color(0, 0, 0, 170)); //Franja oscura
+        titulo.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+    }
+    
+    private void EstilizarLabel(JLabel label) {
+        label.setFont(new Font("Old English Text MT", Font.BOLD, 22));
+        label.setForeground(new Color(230, 230, 150));
+        label.setBackground(new Color(0, 0, 0, 150));
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6), BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 30, 0))));
     }
 }

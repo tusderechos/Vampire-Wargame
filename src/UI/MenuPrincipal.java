@@ -13,6 +13,8 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -67,67 +69,81 @@ public class MenuPrincipal extends JFrame {
         PanelHeader.setLayout(new BoxLayout(PanelHeader, BoxLayout.Y_AXIS));
         PanelHeader.setOpaque(false);
         
-        LblTitulo = new JLabel("VAMPIRE WARGAME", SwingConstants.CENTER);
-        LblTitulo.setFont(new Font("Times New Roman", Font.PLAIN, 28));
-        LblTitulo.setForeground(Color.WHITE);
+        LblTitulo = new JLabel("VAMPIRE WARGAME");
+        EstilizarTitulo(LblTitulo);
         
-        LblSubtitulo = new JLabel("Minijuego de Castlevania: Lord of Shadows", SwingConstants.CENTER);
-        LblSubtitulo.setFont(new Font("Fette Unz Fraktur", Font.PLAIN, 18));
-        LblSubtitulo.setForeground(Color.WHITE);
+        LblSubtitulo = new JLabel("Castlevania: Lord of Shadows");
+        EstilizarLabel(LblSubtitulo);
         
+        int ancho = Math.max(LblTitulo.getPreferredSize().width, LblSubtitulo.getPreferredSize().width);
+        
+        Dimension tamanotitulo = new Dimension(ancho, LblTitulo.getPreferredSize().height);
+        Dimension tamanosubtitulo = new Dimension(ancho, LblSubtitulo.getPreferredSize().height);
+        
+        LblTitulo.setPreferredSize(tamanotitulo);
+        LblTitulo.setMaximumSize(tamanotitulo);
+        
+        LblSubtitulo.setPreferredSize(tamanosubtitulo);
+        LblSubtitulo.setMaximumSize(tamanosubtitulo);
+        
+        PanelHeader.add(Box.createVerticalStrut(10));
         PanelHeader.add(LblTitulo);
         PanelHeader.add(LblSubtitulo);
+        PanelHeader.add(Box.createVerticalGlue());
         
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.Y_AXIS));
         PanelBotones.setOpaque(false);
+        PanelBotones.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         BtnJugar = new JButton("JUGAR VAMPIRE WARGAME");
         BtnJugar.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnJugar.addActionListener(e -> onJugar());
+        EstilizarBoton(BtnJugar);
 
         BtnCuenta = new JButton("MI CUENTA");
         BtnCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnCuenta.addActionListener(e -> AbrirMiCuenta());
+        EstilizarBoton(BtnCuenta);
 
         BtnReportes = new JButton("REPORTES");
         BtnReportes.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnReportes.addActionListener(e -> AbrirReportes());
+        EstilizarBoton(BtnReportes);
 
         BtnLogout = new JButton("LOG OUT");
         BtnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnLogout.addActionListener(e -> onLogout());
+        EstilizarBoton(BtnLogout);
         
-        /*
-            Ing si esta viendo esto es porque he decidido no quitar/cambiar las 5 creaciones de un glue,
-            pido perdon pero asi va a tener que ser
-        */
-        Component glue = Box.createVerticalGlue();
-        Component glue2 = Box.createVerticalStrut(12);
-        Component glue3 = Box.createVerticalStrut(12);
-        Component glue4 = Box.createVerticalStrut(12);
-        Component glue5 = Box.createVerticalGlue();
-
-        PanelBotones.add(glue);
+        PanelBotones.add(Box.createVerticalStrut(70));
         PanelBotones.add(BtnJugar);
-        PanelBotones.add(glue2);
+        PanelBotones.add(Box.createVerticalStrut(14));
         PanelBotones.add(BtnCuenta);
-        PanelBotones.add(glue3);
+        PanelBotones.add(Box.createVerticalStrut(14));
         PanelBotones.add(BtnReportes);
-        PanelBotones.add(glue4);
+        PanelBotones.add(Box.createVerticalStrut(14));
         PanelBotones.add(BtnLogout);
-        PanelBotones.add(glue5);
+        PanelBotones.add(Box.createVerticalGlue());
+        
+        JPanel PanelUsuario = new JPanel(new BorderLayout());
+        PanelUsuario.setOpaque(true);
+        PanelUsuario.setBackground(new Color(0, 0, 0, 160));
         
         LblUsuario = new JLabel("Usuario: " + this.UsuarioActivo);
-        LblUsuario.setFont(new Font("Arial", Font.BOLD, 18));
         LblUsuario.setForeground(Color.WHITE);
         LblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+        EstilizarLabel(LblUsuario);
+        LblUsuario.setFont(new Font("Bookman Old Style", Font.PLAIN, 16));
+        LblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 12, 8, 0));
+        
+        PanelUsuario.add(LblUsuario, BorderLayout.WEST);
         
         PanelFondo.setLayout(new BorderLayout());
         PanelFondo.add(PanelHeader, BorderLayout.NORTH);
         PanelFondo.add(PanelBotones, BorderLayout.CENTER);
-        PanelFondo.add(LblUsuario, BorderLayout.SOUTH);
+        PanelFondo.add(PanelUsuario, BorderLayout.SOUTH);
         
         getRootPane().setDefaultButton(BtnJugar);
         
@@ -233,5 +249,55 @@ public class MenuPrincipal extends JFrame {
         this.UsuarioActivo = (UsuarioActivo == null) ? "" : UsuarioActivo.trim();
         LblUsuario.setText("Usuario: " + this.UsuarioActivo);
         setTitle("Vampire Wargame - Menu Principal" + (this.UsuarioActivo.isEmpty() ? "" : " (" + this.UsuarioActivo + ")"));
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setFont(new Font("Bookman Old Style", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
+        
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarTitulo(JLabel titulo) {
+        titulo.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        Font base = new Font("Old English Text MT", Font.BOLD, 38);
+        titulo.setFont(base);
+        
+        titulo.setForeground(new Color(230, 200, 120));
+        titulo.setOpaque(true);
+        titulo.setBackground(new Color(0, 0, 0, 170)); //Franja oscura
+        titulo.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+    }
+    
+    private void EstilizarLabel(JLabel label) {
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(new Font("Old English Text MT", Font.BOLD, 22));
+        label.setForeground(new Color(230, 230, 150));
+        label.setBackground(new Color(0, 0, 0, 150));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6), BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 30, 0))));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }

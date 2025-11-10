@@ -10,21 +10,22 @@ package ManejoDatos;
  * @author Hp
  */
 
+import Interfaces.RepositorioDatos;
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
-public class CuentasMem {
-    public String[] Usuarios;
-    public String[] Contrasenas;
+public class CuentasMem implements RepositorioDatos {
+    private String[] Usuarios;
+    private String[] Contrasenas;
     
-    public int[] Puntos;
-    public Calendar[] FechaIngreso;
-    public boolean[] Activo;
-    public ArrayList<String[]>[] Logs; 
+    private int[] Puntos;
+    private Calendar[] FechaIngreso;
+    private boolean[] Activo;
+    private ArrayList<String[]>[] Logs; 
     /*
         Tengo que explicar este ArrayList para Daniel del futuro,
-        esto es practicamente un "arrglo de ArrayList de arreglos", que quiero decir con esto:
+        esto es practicamente un "arrglo de ArrayList de arreglos de String", que quiero decir con esto:
         - Como existen varios usuarios simultaneamente, cada uno tiene su propia lista de Logs, una lista dentro del mismo usuario
         es por eso que ando usando una "estructura doble", por decirlo asi
             -Toda esta info literalmente la busque en Google y salio en el AI Overview, entonces tecnicamente lo saque de una IA?? idk estoy muy cansado para saber
@@ -49,29 +50,70 @@ public class CuentasMem {
         }
     }
     
-    public int indexOf(String usuario) {
-        if (usuario == null) {
+    @Override
+    public int getIndiceUsuario(String usuario) {
+        return BuscarUsuario(usuario, 0);
+    }
+    
+    @Override
+    public void AgregarLog(String actor, String fecha, String rival, String resultado) {
+        int indice = getIndiceUsuario(actor);
+        
+        if (indice < 0 || indice >= Logs.length) {
+            return;
+        }
+        
+        if (Logs[indice] == null) {
+            Logs[indice] = new ArrayList<>();
+        }
+        
+        String[] entrada = new String[] {fecha, rival, resultado};
+        Logs[indice].add(entrada);
+    }
+    
+    @Override
+    public ArrayList<String[]> ObtenerLogsUsuario(String usuario) {
+        int indice = getIndiceUsuario(usuario);
+        
+        if (indice < 0 || indice >= Registrados || !Activo[indice]) {
+            return new ArrayList<>();
+        }
+        
+        return new ArrayList<>(Logs[indice]);
+    }
+    
+    public ArrayList<String[]> getLogsUsuario(String usuario) {
+        return ObtenerLogsUsuario(usuario);
+    }
+    
+    private int BuscarUsuario(String usuario, int indice) {
+        if (usuario == null || indice >= Registrados) {
             return -1;
         }
         
-        for (int i = 0; i < Registrados; i++) {
-            if (usuario.equals(Usuarios[i])) {
-                return i;
-            }
+        if (usuario.equalsIgnoreCase(Usuarios[indice])) {
+            return indice;
         }
-        return -1;
+        
+        return BuscarUsuario(usuario, indice + 1);
+    }
+    
+    public int ContarUsuariosActivos() {
+        return ContarActivos(0);
+    }
+    
+    public int ContarActivos(int indice) {
+        if (indice >= Registrados) {
+            return 0;
+        }
+        
+        int suma = Activo[indice] ? 1 : 0;
+        
+        return suma + ContarActivos(indice + 1);
     }
     
     public boolean ExisteUsuario(String usuario) {
-        if (usuario == null) {
-            return false;
-        }
-                
-        if (indexOf(usuario) >= 0) {
-            return true;
-        }
-        
-        return false;
+        return getIndiceUsuario(usuario) >= 0;
     }
     
     public boolean isFull() {
@@ -99,9 +141,9 @@ public class CuentasMem {
             return false;
         }
 
-        int indice = indexOf(usuario);
+        int indice = getIndiceUsuario(usuario);
 
-        if (indice == -1) {
+        if (indice == -1 || !Activo[indice]) {
             return false;
         }
 
@@ -126,13 +168,15 @@ public class CuentasMem {
         Puntos[Registrados] = 0;
         FechaIngreso[Registrados] = Calendar.getInstance();
         Activo[Registrados] = true;
+        Logs[Registrados] = new ArrayList<>();
+        
         Registrados++;
         
         return true;
     }
     
     public boolean Eliminar(String Usuario) {
-        int indice = indexOf(Usuario);
+        int indice = getIndiceUsuario(Usuario);
         
         if (indice == -1) {
             return false;
@@ -140,12 +184,14 @@ public class CuentasMem {
         
         int ultimo = Registrados - 1;
         
+        //Compactar moviendo el ultimo a un "hueco" por decirlo asi
         Usuarios[indice] = Usuarios[ultimo];
         Contrasenas[indice] = Contrasenas[ultimo];
         Puntos[indice] = Puntos[ultimo];
         FechaIngreso[indice] = FechaIngreso[ultimo];
         Activo[indice] = Activo[ultimo];
         
+        //Borrar el ultimo ahora si
         Usuarios[ultimo] = null;
         Contrasenas[ultimo] = null;
         Puntos[ultimo] = 0;
@@ -154,34 +200,6 @@ public class CuentasMem {
         
         Registrados--;
         return true;
-    }
-    
-    public void AgregarLog(String usuario, String fecha, String rival, String resultado) {
-        for (int i = 0; i < Registrados; i++) {
-            if (Usuarios[i].equalsIgnoreCase(usuario)) {
-                if (Logs[i] == null) {
-                    Logs[i] = new ArrayList<>();
-                }
-                
-                Logs[i].add(new String[]{fecha, rival, resultado});
-                break;
-            }
-        }
-    }
-    
-    public ArrayList<String[]> getLogsUsuario(String usuario) {
-        ArrayList<String[]> listalogs = new ArrayList<>();
-        
-        for (int i = 0; i < Registrados; i++) {
-            if (Usuarios[i].equalsIgnoreCase(usuario) && Activo[i]) {
-                if (Logs[i] != null && !Logs[i].isEmpty()) {
-                    listalogs.addAll(Logs[i]);
-                }
-                break;
-            }
-        }
-        
-        return listalogs;
     }
     
     public String getUsuario(int indice) {
@@ -241,6 +259,11 @@ public class CuentasMem {
         Puntos[indice] += suma;
     }
 
+    public void SumarPuntos(String usuario, int suma) {
+        int indice = getIndiceUsuario(usuario);
+        SumarPuntos(indice, suma);
+    }
+    
     public Calendar getFechaIngreso(int indice) {
         if (indice < 0 || indice >= Registrados) {
             return null;
@@ -255,7 +278,9 @@ public class CuentasMem {
             return "";
         }
         
-        SimpleDateFormat sdf = new SimpleDateFormat((patron == null || patron.isEmpty()) ? "dd/MM/yyyy HH:mm" : patron);
+        String formato = (patron == null || patron.isEmpty()) ? "dd/MM/yyyy HH:mm" : patron;
+        
+        SimpleDateFormat sdf = new SimpleDateFormat(formato);
         
         return sdf.format(calendario.getTime());
     }
@@ -281,11 +306,5 @@ public class CuentasMem {
         }
         
         return lista.toArray(new String[0]);
-    }
-    
-    public int getIndiceUsuario(String usuario) {
-        return indexOf(usuario);
-    }
-    
-    
+    }    
 }

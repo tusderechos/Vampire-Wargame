@@ -13,7 +13,6 @@ import Interfaces.*;
 import Ruleta.TipoFicha;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
@@ -21,9 +20,7 @@ import java.util.Random;
 public class PanelRuleta extends JPanel {
     
     private final ArrayList<TipoFicha> Items = new ArrayList<>();
-    
-    private TipoFicha ResultadoPendiente = null;
-    
+        
     private ImageIcon IconoLobo;
     private ImageIcon IconoMuerte;
     private ImageIcon IconoVampiro;
@@ -40,17 +37,19 @@ public class PanelRuleta extends JPanel {
     
     private int IntentosRestantes = 1;
     private boolean Girando = false;
+    private boolean FaseFrenado = false;
     
     private final Random random = new Random();
     private Timer timer;
+    
+    private long UltimoTick;
+    private final double VEL_GIRO_RAPIDO = 360.0;
+    
+    private long DuracionMs = 1500;
     private long TInicio;
-    private long DuracionMs = 3000;
-        
     private double AnguloActual = 0;
-    private double AnguloObjetivo;
     private double AnguloInicio;
     private double SpanTotal;
-    private double t0;
     
     private Listenable Listener;
     
@@ -89,6 +88,10 @@ public class PanelRuleta extends JPanel {
         repaint();
     }
     
+    public boolean isGirando() {
+        return Girando;
+    }
+    
     public void setIntentos(int n) {
         IntentosRestantes = Math.max(0, n);
     }
@@ -116,65 +119,90 @@ public class PanelRuleta extends JPanel {
     }
     
     public void GirarUnaVez() {
-        if (Girando || !QuedanIntentos() || Items.isEmpty()) {
+        if (!Girando) {
+            if (!QuedanIntentos() || Items.isEmpty()) {
+                return;
+            }
+            
+            IntentosRestantes--;
+            IniciarGiroContinuo();
             return;
         }
         
-        IntentosRestantes--;
+        if (Girando && !FaseFrenado) {
+            IniciarFrenado();
+        }
+    }
+    
+    private void IniciarGiroContinuo() {
         Girando = true;
-        
-        int vueltas = 3 + random.nextInt(3);
-        double extra = random.nextDouble() * 360.0;
-        
-        SpanTotal = vueltas * 360.0 + extra;
-        
-        //preparar easing
-        AnguloInicio = AnguloActual;
-        TInicio = Calendar.getInstance().getTimeInMillis();
+        FaseFrenado = false;
         
         if (timer != null && timer.isRunning()) {
             timer.stop();
         }
         
-        int periodo = 16;
+        UltimoTick = Calendar.getInstance().getTimeInMillis();
         
-        timer = new Timer(periodo, e -> {
+        timer = new Timer(16, e -> {
+           long ahora = Calendar.getInstance().getTimeInMillis();
+           double dt = (ahora - UltimoTick) / 1000.0;
+           UltimoTick = ahora;
+           
+           //Sumar angulo a velocidad constante
+           AnguloActual = norm360(AnguloActual + VEL_GIRO_RAPIDO * dt);
+           
+           repaint();
+        });
+        
+        timer.start();
+    }
+    
+    private void IniciarFrenado() {
+        FaseFrenado = true;
+        
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+        
+        AnguloInicio = AnguloActual;
+        TInicio = Calendar.getInstance().getTimeInMillis();
+        
+        int vueltasextra = 1 + random.nextInt(3);
+        double extra = random.nextDouble() * 360.0;
+        SpanTotal = vueltasextra * 360.0 + extra;
+        
+        timer = new Timer(16, e -> {
             long ahora = Calendar.getInstance().getTimeInMillis();
-            double t = Math.min(1.0, (ahora - TInicio) / (double) DuracionMs);
+            double t = Math.min(1.0, ahora - TInicio) / (double) DuracionMs;
             
-            //ease cubico
+            //easing
             double ease = 1 - Math.pow(1 - t, 3);
-            AnguloActual = AnguloInicio + SpanTotal * ease;
-            
-            AnguloActual = norm360(AnguloActual);
+            AnguloActual = norm360(AnguloInicio + SpanTotal * ease);
             
             repaint();
             
             if (t >= 1.0) {
                 ((Timer) e.getSource()).stop();
                 Girando = false;
+                FaseFrenado = false;
                 
-                //Determinar resultado final por el angulo en que termino
                 TipoFicha resultado = CalcularResultadoPorAngulo(AnguloActual);
                 
                 if (Listener != null && resultado != null) {
                     try {
                         Listener.onResultado(resultado);
                     } catch (Throwable ignorar) {
-                        
                     }
                 }
             }
         });
-        timer.start();
     }
     
     public void Detener() {
-        if (timer != null) {
-            timer.stop();
+        if (Girando && !FaseFrenado) {
+            IniciarFrenado();
         }
-        
-        Girando = false;
     }
     
     @Override

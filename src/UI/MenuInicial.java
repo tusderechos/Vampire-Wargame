@@ -13,6 +13,8 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MenuInicial extends JFrame {
     
@@ -38,6 +40,13 @@ public class MenuInicial extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.drawImage(ImagenFondo, 0, 0, getWidth(), getHeight(), this);
+                
+                //Para crear un degradado oscuro transparente arriba del fondo
+                Graphics2D g2d = (Graphics2D) g.create();
+                GradientPaint gp = new GradientPaint(0, 0, new Color(0, 0, 0, 0), 0, getHeight(), new Color(0, 0, 0, 200));
+                
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
             }
         };
         
@@ -55,23 +64,31 @@ public class MenuInicial extends JFrame {
         BtnIniciarSesion = new JButton("INICIAR SESION");
         BtnIniciarSesion.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnIniciarSesion.addActionListener(e -> AbrirIniciarSesion());
+        BtnIniciarSesion.setBounds(330, 460, 150, 30);
+        EstilizarBoton(BtnIniciarSesion);
         
         BtnCrearCuenta = new JButton("CREAR CUENTA");
         BtnCrearCuenta.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnCrearCuenta.addActionListener(e -> AbrirCrearCuenta());
+        BtnCrearCuenta.setBounds(330, 500, 150, 30);
+        EstilizarBoton(BtnCrearCuenta);
         
         BtnSalir = new JButton("SALIR");
         BtnSalir.setAlignmentX(Component.CENTER_ALIGNMENT);
         BtnSalir.addActionListener(e -> onSalir());
+        BtnIniciarSesion.setBounds(330, 540, 150, 30);
+        EstilizarBoton(BtnSalir);
         
+        PanelBotones.add(Box.createVerticalStrut(10));
         PanelBotones.add(BtnIniciarSesion);
+        PanelBotones.add(Box.createVerticalStrut(6));
         PanelBotones.add(BtnCrearCuenta);
+        PanelBotones.add(Box.createVerticalStrut(6));
         PanelBotones.add(BtnSalir);
+        PanelBotones.add(Box.createVerticalStrut(10));
         
-        LblTitulo = new JLabel("VAMPIRE WARGAME", SwingConstants.CENTER);
-        LblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
-        LblTitulo.setForeground(Color.WHITE);
-        LblTitulo.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        LblTitulo = new JLabel("VAMPIRE WARGAME");
+        EstilizarLabel(LblTitulo);
         
         PanelFondo.setLayout(new BorderLayout());
         PanelFondo.add(LblTitulo, BorderLayout.NORTH);
@@ -105,6 +122,41 @@ public class MenuInicial extends JFrame {
         if (Opcion == JOptionPane.YES_OPTION) {
             System.exit(0);
         }
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setFont(new Font("Bookman Old Style", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
+        
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarLabel(JLabel label) {
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(new Font("Old English Text MT", Font.BOLD, 38));
+        label.setForeground(new Color(255, 215, 130));
+        label.setBackground(new Color(0, 0, 0, 190));
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0), BorderFactory.createLineBorder(new Color(0, 0, 0, 120), 2)));
     }
     
     public static void main(String[] args) {

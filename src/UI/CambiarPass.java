@@ -13,6 +13,10 @@ package UI;
 import ManejoDatos.CuentasMem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.border.Border;
+import javax.swing.text.JTextComponent;
 
 public class CambiarPass extends JDialog {
     
@@ -47,7 +51,7 @@ public class CambiarPass extends JDialog {
         };
         
         setTitle("Vampire Wargame - Cambiar Contraseña");
-        setSize(420, 320);
+        setSize(500, 320);
         setResizable(false);
         setLocationRelativeTo(frame);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -58,38 +62,36 @@ public class CambiarPass extends JDialog {
         PanelPass.setOpaque(false);
         
         LblActual = new JLabel("Contraseña Actual: ");
-        LblActual.setFont(new Font("Arial", Font.BOLD, 16));
-        LblActual.setForeground(Color.WHITE);
         PassActual = new JPasswordField();
-        PassActual.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         
-        Component glue = Box.createVerticalStrut(10);
+        EstilizarLabel(LblActual);
+        EstilizarCampoTexto(PassActual);
+        
         
         LblNueva = new JLabel("Contraseña Nueva: ");
-        LblNueva.setFont(new Font("Arial", Font.BOLD, 16));
-        LblNueva.setForeground(Color.WHITE);
         PassNueva = new JPasswordField();
-        PassNueva.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         
-        Component glue2 = Box.createVerticalStrut(10);
+        EstilizarLabel(LblNueva);
+        EstilizarCampoTexto(PassNueva);
+        
         
         LblConfirmar = new JLabel("Confirmar Contraseña: ");
-        LblConfirmar.setFont(new Font("Arial", Font.BOLD, 16));
-        LblConfirmar.setForeground(Color.WHITE);
         PassConfirmar = new JPasswordField();
-        PassConfirmar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         
-        Component glue3 = Box.createVerticalStrut(14);
+        EstilizarLabel(LblConfirmar);
+        EstilizarCampoTexto(PassConfirmar);
         
+        
+        PanelPass.add(Box.createVerticalGlue());
         PanelPass.add(LblActual);
         PanelPass.add(PassActual);
-        PanelPass.add(glue);
+        PanelPass.add(Box.createVerticalStrut(5));
         PanelPass.add(LblNueva);
         PanelPass.add(PassNueva);
-        PanelPass.add(glue2);
+        PanelPass.add(Box.createVerticalStrut(5));
         PanelPass.add(LblConfirmar);
         PanelPass.add(PassConfirmar);
-        PanelPass.add(glue3);
+        PanelPass.add(Box.createVerticalGlue());
         
         JPanel PanelBotones = new JPanel();
         PanelBotones.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -101,8 +103,14 @@ public class CambiarPass extends JDialog {
         BtnCancelar = new JButton("Cancelar");
         BtnCancelar.addActionListener(e -> dispose());
         
+        EstilizarBoton(BtnAceptar);
+        EstilizarBoton(BtnCancelar);
+        
+        PanelBotones.add(Box.createHorizontalGlue());
         PanelBotones.add(BtnAceptar);
+//        PanelBotones.add(Box.createHorizontalStrut(5 ));
         PanelBotones.add(BtnCancelar);
+        PanelBotones.add(Box.createHorizontalGlue());
         
         PanelPass.add(PanelBotones);
         
@@ -160,7 +168,7 @@ public class CambiarPass extends JDialog {
             return;
         }
         
-        int indice = Memoria.indexOf(UsuarioActivo);
+        int indice = Memoria.getIndiceUsuario(UsuarioActivo);
         
         if (indice == -1) {
             JOptionPane.showMessageDialog(this, "Cuenta no encontrada", "Error", JOptionPane.ERROR_MESSAGE);
@@ -185,5 +193,60 @@ public class CambiarPass extends JDialog {
         } else {
             JOptionPane.showMessageDialog(this, "Hubo un error al actualziar la contraseña.\nIntentelo una vez mas", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+    
+    private void EstilizarCampoTexto(JTextComponent campo) {
+        campo.setOpaque(true);
+        campo.setForeground(Color.BLACK);
+        campo.setCaretColor(new Color(255, 230, 200));
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        
+        //Borde solo abajo, como tipo "underline"
+        Border underline = BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(220, 180, 0));
+        
+        //Padding interno
+        Border padding = BorderFactory.createEmptyBorder(4, 6, 4, 6);
+        
+        campo.setBorder(BorderFactory.createCompoundBorder(underline, padding));
+    }
+    
+    private void EstilizarBoton(JButton boton) {
+        boton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        boton.setHorizontalAlignment(SwingConstants.CENTER);
+        boton.setFont(new Font("Bookman Old Style", Font.BOLD, 18));
+        boton.setBackground(new Color(25, 25, 25)); //Gris oscuro tipo metal
+        boton.setForeground(new Color(220, 180, 120)); //Dorado suave
+        boton.setFocusPainted(false);
+        boton.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(120, 0, 0), 2), BorderFactory.createEmptyBorder(5, 15, 5, 15)));
+        boton.setOpaque(true);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(220, 44));
+        
+        //Mi querido, hermoso y celestial efecto hover
+        boton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                boton.setBackground(new Color(60, 0, 0));
+                boton.setForeground(new Color(255, 220, 130));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                boton.setBackground(new Color(25, 25, 25));
+                boton.setForeground(new Color(220, 180, 80));
+            }
+        });
+    }
+    
+    private void EstilizarLabel(JLabel label) {
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setFont(new Font("Old English Text MT", Font.BOLD, 22));
+        label.setForeground(new Color(230, 230, 150));
+        label.setBackground(new Color(0, 0, 0, 150));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6), BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 30, 0))));
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 }
