@@ -256,12 +256,15 @@ public class CuentasMem implements RepositorioDatos {
             return;
         }
         
-        Puntos[indice] += suma;
+        SumarPuntos(indice + 1, suma);
+        
+        if (Activo[indice]) {
+            Puntos[indice] += suma;
+        }
     }
 
     public void SumarPuntos(String usuario, int suma) {
-        int indice = getIndiceUsuario(usuario);
-        SumarPuntos(indice, suma);
+        SumarPuntos(0, suma);
     }
     
     public Calendar getFechaIngreso(int indice) {
