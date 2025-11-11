@@ -185,7 +185,7 @@ public class MiCuenta extends JFrame {
             menuPrincipal.dispose();
         }
         
-        new MenuInicial().setVisible(true);
+        new MenuInicial(Memoria).setVisible(true);
     }
     
     private void onSalir() {

@@ -9,6 +9,7 @@ package UI;
  * @author Hp
  */
 
+import Fichas.*;
 import Interfaces.*;
 import Ruleta.TipoFicha;
 import javax.swing.*;
@@ -145,6 +146,23 @@ public class PanelRuleta extends JPanel {
         } else {
             IntentosRestantes = 3;
         }
+    }
+    
+    private int ContarPiezasRuleta(ArrayList<Ficha> cementerio) {
+        int cont = 0;
+        
+        for (Ficha ficha : cementerio) {
+            switch (ficha.getTipo()) {
+                case HOMBRE_LOBO:
+                case VAMPIRO:
+                case MUERTE:
+                    cont++;
+                    break;
+                default:
+            }
+        }
+        
+        return cont;
     }
     
     public void GirarUnaVez() {

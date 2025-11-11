@@ -21,12 +21,16 @@ import javax.swing.text.JTextComponent;
 public class CrearCuenta extends JDialog {
     
     private JLabel LblTitulo;
+    
     private JLabel LblUsuario;
     private JTextField TxtUsuario;
+    
     private JLabel LblContra;
     private JPasswordField PassContrasena;
+    
     private JLabel LblConfirmarContra;
     private JPasswordField PassConfirmarContra;
+    
     private JButton BtnCrear;
     private JButton BtnCancelar;
     
@@ -172,8 +176,17 @@ public class CrearCuenta extends JDialog {
             }
         }
         
-        if (!contrasena.matches(".*[A-Z]*.") || !confirmarcontra.matches(".*[A-Z]*.")) {
-            JOptionPane.showMessageDialog(this, "la contraseña debe tener como minimo una letra mayuscula!", "Error", JOptionPane.ERROR_MESSAGE);
+        boolean tienemayuscula = false;
+        
+        for (int i = 0; i < contrasena.length(); i++) {
+            if (Character.isUpperCase(contrasena.charAt(i))) {
+                tienemayuscula = true;
+                break;
+            }
+        }
+        
+        if (!tienemayuscula) {
+            JOptionPane.showMessageDialog(this, "La contraseña debe tener al menos una letra mayuscula", "Error", JOptionPane.ERROR_MESSAGE);
             PassContrasena.requestFocus();
             return;
         }

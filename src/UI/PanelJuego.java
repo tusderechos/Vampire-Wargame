@@ -41,7 +41,6 @@ public class PanelJuego extends JFrame {
     
     private JButton BtnSalir;
     private JButton BtnGirar;
-    private JButton BtnParar;
     
     private JPanel Raiz;
     private JPanel WrapperCentral;
@@ -108,7 +107,7 @@ public class PanelJuego extends JFrame {
         
         
         LblTitulo = new JLabel("PANEL DE JUEGO");
-        EstilizarTitulo(LblTitulo);
+        EstilizarLabel(LblTitulo);
         
         LblTurno = new JLabel("Turno: BLANCAS");
         EstilizarLabel(LblTurno);
@@ -118,7 +117,7 @@ public class PanelJuego extends JFrame {
         
         LblJugadores = new JLabel("Blancas: " + JugadorBlancas + "  |   Negras: " + JugadorNegras);
         EstilizarLabel(LblJugadores);
-        LblJugadores.setFont(LblJugadores.getFont().deriveFont(14f));
+        LblJugadores.setFont(LblJugadores.getFont().deriveFont(12f));
         
         
         CmtBlancas = new JPanel();
@@ -271,18 +270,20 @@ public class PanelJuego extends JFrame {
         EstilizarBoton(BtnSalir);
         BtnSalir.addActionListener(e -> onSalir());
         
-        BtnGirar = new JButton("GIRAR");
+        BtnGirar = new JButton("DETENER");
         EstilizarBoton(BtnGirar);
         BtnGirar.addActionListener(e -> panelRuleta.GirarUnaVez());
         
-        BtnParar = new JButton("DETENER");
-        EstilizarBoton(BtnParar);
-        BtnGirar.addActionListener(e -> panelRuleta.Detener());
+        JPanel PanelBotones = new JPanel();
+        PanelBotones.setLayout(new BoxLayout(PanelBotones, BoxLayout.X_AXIS));
+        PanelBotones.setOpaque(false);
+        
+        PanelBotones.add(BtnGirar);
+        PanelBotones.add(Box.createHorizontalStrut(5));
+        PanelBotones.add(BtnSalir);
                 
         Lateral.add(Box.createVerticalStrut(8));
-        Lateral.add(BtnSalir);
-        Lateral.add(BtnGirar);
-        Lateral.add(BtnParar);
+        Lateral.add(PanelBotones);
         Lateral.add(Box.createVerticalGlue());
         
         
@@ -382,6 +383,7 @@ public class PanelJuego extends JFrame {
         tableroVisual.limpiarDestinos();
         tableroVisual.LimpiarSeleccion();
         tableroVisual.repaint();
+        
         
         panelRuleta.setIntentosPorPiezasPerdidas(PiezasPerdidas(TurnoActual));
         
@@ -830,20 +832,28 @@ public class PanelJuego extends JFrame {
     }
     
     private int PiezasPerdidas(Bando bando) {
-        int TotalInicial = Tablero.TOTAL_PIEZAS_POR_JUGADOR; //Numero de fichas que cada jugador tiene
-        int Activas = 0;
+        final int TOTAL_PIEZAS_RULETA_POR_JUGADOR = 6;
+        int ActivasRuleta = 0;
         
         for (int fila = 0; fila < tablero.getFilas(); fila++) {
             for (int col = 0; col < tablero.getColumnas(); col++) {
                 Casilla casilla = tablero.get(new Posicion(fila, col));
                 
-                if (casilla != null && !casilla.CasillaLibre() && casilla.getOcupante().getColor() == bando) {
-                    Activas++;
+                if (casilla != null && !casilla.CasillaLibre()) {
+                    Ficha ficha = casilla.getOcupante();
+                    
+                    if (ficha.getColor() == bando && esPiezaRuleta(ficha)) {
+                        ActivasRuleta++;
+                    }
                 }
             }
         }
         
-        return TotalInicial - Activas;
+        return TOTAL_PIEZAS_RULETA_POR_JUGADOR - ActivasRuleta;
+    }
+    
+    private boolean esPiezaRuleta(Ficha ficha) {
+        return (ficha instanceof HombreLobo) || (ficha instanceof Vampiro) || (ficha instanceof Muerte);
     }
     
     private void FindeAccionyTurno() {
